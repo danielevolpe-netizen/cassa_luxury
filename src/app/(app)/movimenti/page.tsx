@@ -51,16 +51,38 @@ export default async function MovimentiPage({
   const isAdmin = user?.role === "admin";
   const { companyList, categoryList, carList } = lookups;
 
+  const exportParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(sp)) {
+    if (value) exportParams.set(key, value);
+  }
+  const exportQuery = exportParams.toString();
+  const exportUrl = (format: string) =>
+    `/movimenti/export?${exportQuery ? exportQuery + "&" : ""}format=${format}`;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Movimenti</h1>
-        <Link
-          href="/movimenti/nuovo"
-          className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700"
-        >
-          + Nuovo movimento
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href={exportUrl("csv")}
+            className="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-100"
+          >
+            Esporta CSV
+          </a>
+          <a
+            href={exportUrl("xlsx")}
+            className="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-100"
+          >
+            Esporta Excel
+          </a>
+          <Link
+            href="/movimenti/nuovo"
+            className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+          >
+            + Nuovo movimento
+          </Link>
+        </div>
       </div>
 
       {/* Filtri */}

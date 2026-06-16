@@ -49,11 +49,14 @@ function buildWhere(f: TransactionFilters): SQL | undefined {
 }
 
 /** Elenco movimenti con anagrafiche collegate, filtrato e ordinato per data. */
-export async function listTransactions(f: TransactionFilters = {}) {
+export async function listTransactions(
+  f: TransactionFilters = {},
+  opts: { limit?: number } = {},
+) {
   return db.query.transactions.findMany({
     where: buildWhere(f),
     orderBy: [desc(transactions.date), desc(transactions.createdAt)],
-    limit: 500,
+    limit: opts.limit ?? 500,
     with: {
       company: true,
       category: true,

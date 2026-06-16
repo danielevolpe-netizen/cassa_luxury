@@ -32,6 +32,14 @@ export default async function ReportPage({
     getProfitLossByCategory(filter),
   ]);
 
+  const exportParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(sp)) {
+    if (value) exportParams.set(key, value);
+  }
+  const eq = exportParams.toString();
+  const exportUrl = (format: string) =>
+    `/report/export?${eq ? eq + "&" : ""}format=${format}`;
+
   const tot = byCompany.reduce(
     (acc, r) => {
       acc.ricavi += r.ricavi;
@@ -44,9 +52,25 @@ export default async function ReportPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Conto economico
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Conto economico
+        </h1>
+        <div className="flex items-center gap-2">
+          <a
+            href={exportUrl("csv")}
+            className="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-100"
+          >
+            Esporta CSV
+          </a>
+          <a
+            href={exportUrl("xlsx")}
+            className="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-100"
+          >
+            Esporta Excel
+          </a>
+        </div>
+      </div>
 
       <form
         method="get"
