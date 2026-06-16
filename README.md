@@ -44,6 +44,10 @@ Gestionale web per la cassa, la flotta e la contabilità di una società di nole
 | `npm run db:push` | Sincronizza lo schema col database (dev) |
 | `npm run db:studio` | Apre Drizzle Studio |
 
+## Deploy
+
+Vedi [DEPLOY.md](./DEPLOY.md) per il deploy su Vercel (variabili d'ambiente e passi).
+
 ## Struttura
 
 ```

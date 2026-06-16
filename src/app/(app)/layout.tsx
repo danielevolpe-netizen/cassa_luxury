@@ -12,25 +12,14 @@ export default async function AppLayout({
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <header className="border-b border-neutral-200">
-        <div className="flex items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-6">
-            <span className="text-sm font-semibold uppercase tracking-widest text-neutral-800">
-              Cassa Luxury
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-6">
+          <span className="text-sm font-semibold uppercase tracking-widest text-neutral-800">
+            Cassa Luxury
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="hidden text-sm text-neutral-600 sm:inline">
+              {user?.name}
             </span>
-            <nav className="flex items-center gap-1">
-              <NavLink href="/">Dashboard</NavLink>
-              <NavLink href="/movimenti">Movimenti</NavLink>
-              <NavLink href="/flotta">Flotta</NavLink>
-              <NavLink href="/scadenze">Scadenze</NavLink>
-              <NavLink href="/report">Report</NavLink>
-              <NavLink href="/crediti-debiti">Crediti/Debiti</NavLink>
-              {user?.role === "admin" ? (
-                <NavLink href="/anagrafiche">Anagrafiche</NavLink>
-              ) : null}
-            </nav>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-neutral-600">{user?.name}</span>
             <span
               className={
                 "rounded px-1.5 py-0.5 text-xs font-medium " +
@@ -56,9 +45,20 @@ export default async function AppLayout({
             </form>
           </div>
         </div>
+        <nav className="flex items-center gap-1 overflow-x-auto px-4 pb-2 sm:px-6">
+          <NavLink href="/">Dashboard</NavLink>
+          <NavLink href="/movimenti">Movimenti</NavLink>
+          <NavLink href="/flotta">Flotta</NavLink>
+          <NavLink href="/scadenze">Scadenze</NavLink>
+          <NavLink href="/report">Report</NavLink>
+          <NavLink href="/crediti-debiti">Crediti/Debiti</NavLink>
+          {user?.role === "admin" ? (
+            <NavLink href="/anagrafiche">Anagrafiche</NavLink>
+          ) : null}
+        </nav>
       </header>
 
-      <main className="flex-1 px-6 py-6">{children}</main>
+      <main className="flex-1 px-4 py-6 sm:px-6">{children}</main>
     </div>
   );
 }

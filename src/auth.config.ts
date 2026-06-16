@@ -3,6 +3,8 @@ import type { NextAuthConfig } from "next-auth";
 // Configurazione base, sicura per l'edge runtime (middleware): nessun accesso
 // al database né a moduli Node. La logica di login (db + bcrypt) sta in auth.ts.
 export const authConfig = {
+  // Necessario dietro proxy/hosting (es. Vercel) per fidarsi dell'host.
+  trustHost: true,
   pages: {
     signIn: "/login",
   },
