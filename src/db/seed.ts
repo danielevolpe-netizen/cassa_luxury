@@ -1,6 +1,12 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { db } from "./index";
-import { categories, companies, paymentMethods } from "./schema";
+import { categories, companies, paymentMethods, users } from "./schema";
+
+const ADMIN_EMAIL = "daniele@numbersgroup.it";
+const ADMIN_NAME = "Daniele Volpe";
+// Password temporanea: da cambiare al primo accesso.
+const ADMIN_DEFAULT_PASSWORD = "CassaLuxury2026!";
 
 // Seed delle anagrafiche di base. Idempotente: usa onConflictDoNothing
 // così può essere rieseguito senza creare duplicati.
@@ -44,6 +50,25 @@ async function main() {
     .values(PAYMENT_METHODS)
     .onConflictDoNothing();
   console.log(`  metodi di pagamento: ${PAYMENT_METHODS.length}`);
+
+  // Utente admin di default (idempotente: non sovrascrive se già presente).
+  const passwordHash = await bcrypt.hash(ADMIN_DEFAULT_PASSWORD, 10);
+  const inserted = await db
+    .insert(users)
+    .values({
+      email: ADMIN_EMAIL,
+      name: ADMIN_NAME,
+      passwordHash,
+      role: "admin",
+    })
+    .onConflictDoNothing({ target: users.email })
+    .returning({ id: users.id });
+
+  if (inserted.length > 0) {
+    console.log(`  admin creato: ${ADMIN_EMAIL} / ${ADMIN_DEFAULT_PASSWORD}`);
+  } else {
+    console.log(`  admin già esistente: ${ADMIN_EMAIL} (password invariata)`);
+  }
 
   console.log("Seed completato.");
 }
