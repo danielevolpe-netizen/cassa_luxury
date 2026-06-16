@@ -22,6 +22,8 @@ export default async function AppLayout({
               <NavLink href="/movimenti">Movimenti</NavLink>
               <NavLink href="/flotta">Flotta</NavLink>
               <NavLink href="/scadenze">Scadenze</NavLink>
+              <NavLink href="/report">Report</NavLink>
+              <NavLink href="/crediti-debiti">Crediti/Debiti</NavLink>
               {user?.role === "admin" ? (
                 <NavLink href="/anagrafiche">Anagrafiche</NavLink>
               ) : null}
