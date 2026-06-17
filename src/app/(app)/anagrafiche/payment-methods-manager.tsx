@@ -8,11 +8,13 @@ import {
   type FormState,
 } from "./actions";
 import { DeleteButton } from "@/components/delete-button";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type Method = { id: string; name: string; active: boolean };
 
-const input =
-  "w-full rounded-md border border-neutral-300 px-2 py-1.5 text-sm outline-none focus:border-neutral-900";
 const empty: FormState = {};
 
 function CreateForm() {
@@ -26,21 +28,17 @@ function CreateForm() {
     <form
       ref={ref}
       action={action}
-      className="flex flex-wrap items-end gap-2 rounded-lg border border-neutral-200 p-3"
+      className="flex flex-wrap items-end gap-2 rounded-lg border p-3"
     >
       <div className="flex-1 space-y-1">
-        <label className="text-xs text-neutral-500">Nome *</label>
-        <input name="name" required className={input} />
+        <Label className="text-xs text-muted-foreground">Nome *</Label>
+        <Input name="name" required />
       </div>
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-60"
-      >
+      <Button type="submit" disabled={pending}>
         + Aggiungi
-      </button>
+      </Button>
       {state.error ? (
-        <p className="w-full text-sm text-red-600">{state.error}</p>
+        <p className="w-full text-sm text-destructive">{state.error}</p>
       ) : null}
     </form>
   );
@@ -52,27 +50,20 @@ function EditRow({ m }: { m: Method }) {
     empty,
   );
   return (
-    <form
-      action={action}
-      className="flex flex-wrap items-center gap-2 rounded-lg border border-neutral-200 p-2"
-    >
-      <input name="name" defaultValue={m.name} required className={input + " flex-1"} />
-      <label className="flex items-center gap-1 text-sm text-neutral-600">
-        <input type="checkbox" name="active" defaultChecked={m.active} /> attivo
-      </label>
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium hover:bg-neutral-100 disabled:opacity-60"
-      >
+    <form action={action} className="flex flex-wrap items-center gap-2 rounded-lg border p-2">
+      <Input name="name" defaultValue={m.name} required className="flex-1" />
+      <Label className="flex items-center gap-1.5 font-normal text-muted-foreground">
+        <Checkbox name="active" defaultChecked={m.active} /> attivo
+      </Label>
+      <Button type="submit" variant="outline" size="sm" disabled={pending}>
         Salva
-      </button>
+      </Button>
       <DeleteButton
         action={deletePaymentMethod.bind(null, m.id)}
         message={`Eliminare il metodo "${m.name}"?`}
       />
       {state.error ? (
-        <p className="w-full text-sm text-red-600">{state.error}</p>
+        <p className="w-full text-sm text-destructive">{state.error}</p>
       ) : null}
     </form>
   );

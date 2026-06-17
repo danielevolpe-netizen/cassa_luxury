@@ -15,7 +15,7 @@ export default async function AnagraficheLayout({
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold tracking-tight">Anagrafiche</h1>
-      <nav className="flex flex-wrap gap-1 border-b border-neutral-200 pb-3">
+      <nav className="flex flex-wrap gap-1 border-b pb-3">
         <NavLink href="/anagrafiche/societa">Società</NavLink>
         <NavLink href="/anagrafiche/categorie">Categorie</NavLink>
         <NavLink href="/anagrafiche/metodi">Metodi di pagamento</NavLink>
