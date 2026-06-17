@@ -126,19 +126,21 @@ function EditRow({
     empty,
   );
   return (
-    <form action={action} className="flex flex-col gap-2 rounded-lg border p-2">
-      <div className="flex items-center gap-2">
-        <AlertBadge dueDate={d.dueDate} status={d.status} />
-        <Fields d={d} cars={cars} fixedCarId={fixedCarId} />
-      </div>
-      <div className="flex items-center gap-3">
-        <Button type="submit" variant="outline" size="sm" disabled={pending}>
-          Salva
-        </Button>
-        <DeleteButton action={deleteDeadline.bind(null, d.id)} message="Eliminare questa scadenza?" />
-        {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
-      </div>
-    </form>
+    <div className="flex flex-col gap-2 rounded-lg border p-2">
+      <form action={action} className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <AlertBadge dueDate={d.dueDate} status={d.status} />
+          <Fields d={d} cars={cars} fixedCarId={fixedCarId} />
+        </div>
+        <div className="flex items-center gap-3">
+          <Button type="submit" variant="outline" size="sm" disabled={pending}>
+            Salva
+          </Button>
+          {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
+        </div>
+      </form>
+      <DeleteButton action={deleteDeadline.bind(null, d.id)} message="Eliminare questa scadenza?" />
+    </div>
   );
 }
 

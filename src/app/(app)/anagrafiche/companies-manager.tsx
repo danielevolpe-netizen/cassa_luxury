@@ -64,24 +64,26 @@ function EditRow({ c }: { c: Company }) {
     empty,
   );
   return (
-    <form action={action} className="flex flex-wrap items-center gap-2 rounded-lg border p-2">
-      <Input name="name" defaultValue={c.name} required className="flex-1" />
-      <Input name="code" defaultValue={c.code ?? ""} placeholder="codice" className="w-32" />
-      <Input name="notes" defaultValue={c.notes ?? ""} placeholder="note" className="flex-1" />
-      <Label className="flex items-center gap-1.5 font-normal text-muted-foreground">
-        <Checkbox name="active" defaultChecked={c.active} /> attiva
-      </Label>
-      <Button type="submit" variant="outline" size="sm" disabled={pending}>
-        Salva
-      </Button>
+    <div className="flex flex-wrap items-center gap-2 rounded-lg border p-2">
+      <form action={action} className="flex flex-1 flex-wrap items-center gap-2">
+        <Input name="name" defaultValue={c.name} required className="flex-1" />
+        <Input name="code" defaultValue={c.code ?? ""} placeholder="codice" className="w-32" />
+        <Input name="notes" defaultValue={c.notes ?? ""} placeholder="note" className="flex-1" />
+        <Label className="flex items-center gap-1.5 font-normal text-muted-foreground">
+          <Checkbox name="active" defaultChecked={c.active} /> attiva
+        </Label>
+        <Button type="submit" variant="outline" size="sm" disabled={pending}>
+          Salva
+        </Button>
+        {state.error ? (
+          <p className="w-full text-sm text-destructive">{state.error}</p>
+        ) : null}
+      </form>
       <DeleteButton
         action={deleteCompany.bind(null, c.id)}
         message={`Eliminare la società "${c.name}"? I movimenti collegati resteranno senza società.`}
       />
-      {state.error ? (
-        <p className="w-full text-sm text-destructive">{state.error}</p>
-      ) : null}
-    </form>
+    </div>
   );
 }
 

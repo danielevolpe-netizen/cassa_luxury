@@ -84,16 +84,18 @@ function EditCard({ l, carId }: { l: Leasing; carId: string }) {
     empty,
   );
   return (
-    <form action={action} className="flex flex-col gap-3 rounded-xl border bg-card p-4">
-      <Fields l={l} />
-      <div className="flex items-center gap-3">
-        <Button type="submit" variant="outline" size="sm" disabled={pending}>
-          Salva
-        </Button>
-        <DeleteButton action={deleteLeasing.bind(null, l.id, carId)} message="Eliminare questo contratto di leasing?" />
-        {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
-      </div>
-    </form>
+    <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+      <form action={action} className="flex flex-col gap-3">
+        <Fields l={l} />
+        <div className="flex items-center gap-3">
+          <Button type="submit" variant="outline" size="sm" disabled={pending}>
+            Salva
+          </Button>
+          {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
+        </div>
+      </form>
+      <DeleteButton action={deleteLeasing.bind(null, l.id, carId)} message="Eliminare questo contratto di leasing?" />
+    </div>
   );
 }
 

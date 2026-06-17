@@ -77,30 +77,32 @@ function EditRow({ c }: { c: Category }) {
     empty,
   );
   return (
-    <form action={action} className="flex flex-wrap items-center gap-2 rounded-lg border p-2">
-      <Input name="name" defaultValue={c.name} required className="flex-1" />
-      <select name="kind" defaultValue={c.kind} className={nativeSelect + " w-36"}>
-        {KINDS.map((k) => (
-          <option key={k.value} value={k.value}>
-            {k.label}
-          </option>
-        ))}
-      </select>
-      <Input name="sortOrder" type="number" defaultValue={c.sortOrder} className="w-20" />
-      <Label className="flex items-center gap-1.5 font-normal text-muted-foreground">
-        <Checkbox name="active" defaultChecked={c.active} /> attiva
-      </Label>
-      <Button type="submit" variant="outline" size="sm" disabled={pending}>
-        Salva
-      </Button>
+    <div className="flex flex-wrap items-center gap-2 rounded-lg border p-2">
+      <form action={action} className="flex flex-1 flex-wrap items-center gap-2">
+        <Input name="name" defaultValue={c.name} required className="flex-1" />
+        <select name="kind" defaultValue={c.kind} className={nativeSelect + " w-36"}>
+          {KINDS.map((k) => (
+            <option key={k.value} value={k.value}>
+              {k.label}
+            </option>
+          ))}
+        </select>
+        <Input name="sortOrder" type="number" defaultValue={c.sortOrder} className="w-20" />
+        <Label className="flex items-center gap-1.5 font-normal text-muted-foreground">
+          <Checkbox name="active" defaultChecked={c.active} /> attiva
+        </Label>
+        <Button type="submit" variant="outline" size="sm" disabled={pending}>
+          Salva
+        </Button>
+        {state.error ? (
+          <p className="w-full text-sm text-destructive">{state.error}</p>
+        ) : null}
+      </form>
       <DeleteButton
         action={deleteCategory.bind(null, c.id)}
         message={`Eliminare la categoria "${c.name}"?`}
       />
-      {state.error ? (
-        <p className="w-full text-sm text-destructive">{state.error}</p>
-      ) : null}
-    </form>
+    </div>
   );
 }
 

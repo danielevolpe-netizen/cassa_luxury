@@ -6,9 +6,19 @@ import {
   type PeriodFilter,
 } from "@/lib/data/reports";
 import { formatEUR } from "@/lib/money";
-
-const selectClass =
-  "rounded-md border border-neutral-300 px-2 py-1.5 text-sm outline-none focus:border-neutral-900";
+import { nativeSelect } from "@/lib/ui";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 function saldoClass(n: number) {
   return n >= 0 ? "text-green-700" : "text-red-700";
@@ -52,39 +62,28 @@ export default async function ReportPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Conto economico
-        </h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight">Conto economico</h1>
         <div className="flex items-center gap-2">
-          <a
-            href={exportUrl("csv")}
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-100"
-          >
+          <a href={exportUrl("csv")} className={buttonVariants({ variant: "outline", size: "sm" })}>
             Esporta CSV
           </a>
-          <a
-            href={exportUrl("xlsx")}
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-100"
-          >
+          <a href={exportUrl("xlsx")} className={buttonVariants({ variant: "outline", size: "sm" })}>
             Esporta Excel
           </a>
         </div>
       </div>
 
-      <form
-        method="get"
-        className="flex flex-wrap items-end gap-2 rounded-lg border border-neutral-200 p-3"
-      >
+      <form method="get" className="flex flex-wrap items-end gap-2 rounded-lg border p-3">
         <div className="space-y-1">
-          <label className="block text-xs text-neutral-500">Dal</label>
-          <input type="date" name="from" defaultValue={sp.from ?? ""} className={selectClass} />
+          <Label className="text-xs text-muted-foreground">Dal</Label>
+          <Input type="date" name="from" defaultValue={sp.from ?? ""} className="h-9 w-40" />
         </div>
         <div className="space-y-1">
-          <label className="block text-xs text-neutral-500">Al</label>
-          <input type="date" name="to" defaultValue={sp.to ?? ""} className={selectClass} />
+          <Label className="text-xs text-muted-foreground">Al</Label>
+          <Input type="date" name="to" defaultValue={sp.to ?? ""} className="h-9 w-40" />
         </div>
-        <select name="companyId" defaultValue={sp.companyId ?? ""} className={selectClass}>
+        <select name="companyId" defaultValue={sp.companyId ?? ""} className={nativeSelect}>
           <option value="">Tutte le società</option>
           {companies.map((c) => (
             <option key={c.id} value={c.id}>
@@ -92,108 +91,104 @@ export default async function ReportPage({
             </option>
           ))}
         </select>
-        <button type="submit" className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-700">
+        <Button type="submit" size="sm">
           Filtra
-        </button>
-        <Link href="/report" className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium hover:bg-neutral-100">
+        </Button>
+        <Link href="/report" className={buttonVariants({ variant: "ghost", size: "sm" })}>
           Azzera
         </Link>
       </form>
 
       {/* P&L per società */}
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Per società
         </h2>
-        <div className="overflow-x-auto rounded-lg border border-neutral-200">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-left text-xs uppercase text-neutral-500">
-              <tr>
-                <th className="px-3 py-2">Società</th>
-                <th className="px-3 py-2 text-right">Ricavi</th>
-                <th className="px-3 py-2 text-right">Costi</th>
-                <th className="px-3 py-2 text-right">Saldo</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
+        <div className="overflow-x-auto rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Società</TableHead>
+                <TableHead className="text-right">Ricavi</TableHead>
+                <TableHead className="text-right">Costi</TableHead>
+                <TableHead className="text-right">Saldo</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {byCompany.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-3 py-8 text-center text-neutral-500">
+                <TableRow>
+                  <TableCell colSpan={4} className="h-20 text-center text-muted-foreground">
                     Nessun dato nel periodo selezionato.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 byCompany.map((r) => (
-                  <tr key={r.companyId ?? "none"} className="hover:bg-neutral-50">
-                    <td className="px-3 py-2 font-medium">{r.companyName}</td>
-                    <td className="px-3 py-2 text-right text-green-700">
-                      {formatEUR(r.ricavi)}
-                    </td>
-                    <td className="px-3 py-2 text-right text-red-700">
-                      {formatEUR(r.costi)}
-                    </td>
-                    <td className={"px-3 py-2 text-right font-semibold " + saldoClass(r.saldo)}>
+                  <TableRow key={r.companyId ?? "none"}>
+                    <TableCell className="font-medium">{r.companyName}</TableCell>
+                    <TableCell className="text-right text-green-700">{formatEUR(r.ricavi)}</TableCell>
+                    <TableCell className="text-right text-red-700">{formatEUR(r.costi)}</TableCell>
+                    <TableCell className={"text-right font-semibold " + saldoClass(r.saldo)}>
                       {formatEUR(r.saldo)}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
+            </TableBody>
             {byCompany.length > 0 ? (
-              <tfoot className="border-t-2 border-neutral-300 font-semibold">
-                <tr>
-                  <td className="px-3 py-2">Totale</td>
-                  <td className="px-3 py-2 text-right text-green-700">{formatEUR(tot.ricavi)}</td>
-                  <td className="px-3 py-2 text-right text-red-700">{formatEUR(tot.costi)}</td>
-                  <td className={"px-3 py-2 text-right " + saldoClass(totSaldo)}>
+              <TableFooter>
+                <TableRow>
+                  <TableCell>Totale</TableCell>
+                  <TableCell className="text-right text-green-700">{formatEUR(tot.ricavi)}</TableCell>
+                  <TableCell className="text-right text-red-700">{formatEUR(tot.costi)}</TableCell>
+                  <TableCell className={"text-right " + saldoClass(totSaldo)}>
                     {formatEUR(totSaldo)}
-                  </td>
-                </tr>
-              </tfoot>
+                  </TableCell>
+                </TableRow>
+              </TableFooter>
             ) : null}
-          </table>
+          </Table>
         </div>
       </section>
 
       {/* Dettaglio per categoria */}
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Per categoria
         </h2>
-        <div className="overflow-x-auto rounded-lg border border-neutral-200">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-left text-xs uppercase text-neutral-500">
-              <tr>
-                <th className="px-3 py-2">Categoria</th>
-                <th className="px-3 py-2 text-right">Ricavi</th>
-                <th className="px-3 py-2 text-right">Costi</th>
-                <th className="px-3 py-2 text-right">Saldo</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
+        <div className="overflow-x-auto rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Categoria</TableHead>
+                <TableHead className="text-right">Ricavi</TableHead>
+                <TableHead className="text-right">Costi</TableHead>
+                <TableHead className="text-right">Saldo</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {byCategory.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-3 py-8 text-center text-neutral-500">
+                <TableRow>
+                  <TableCell colSpan={4} className="h-20 text-center text-muted-foreground">
                     Nessun dato.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 byCategory.map((r) => {
                   const saldo = r.ricavi - r.costi;
                   return (
-                    <tr key={r.categoryName} className="hover:bg-neutral-50">
-                      <td className="px-3 py-2">{r.categoryName}</td>
-                      <td className="px-3 py-2 text-right text-green-700">{formatEUR(r.ricavi)}</td>
-                      <td className="px-3 py-2 text-right text-red-700">{formatEUR(r.costi)}</td>
-                      <td className={"px-3 py-2 text-right " + saldoClass(saldo)}>
+                    <TableRow key={r.categoryName}>
+                      <TableCell>{r.categoryName}</TableCell>
+                      <TableCell className="text-right text-green-700">{formatEUR(r.ricavi)}</TableCell>
+                      <TableCell className="text-right text-red-700">{formatEUR(r.costi)}</TableCell>
+                      <TableCell className={"text-right " + saldoClass(saldo)}>
                         {formatEUR(saldo)}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </section>
     </div>

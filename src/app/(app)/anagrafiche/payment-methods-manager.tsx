@@ -50,22 +50,24 @@ function EditRow({ m }: { m: Method }) {
     empty,
   );
   return (
-    <form action={action} className="flex flex-wrap items-center gap-2 rounded-lg border p-2">
-      <Input name="name" defaultValue={m.name} required className="flex-1" />
-      <Label className="flex items-center gap-1.5 font-normal text-muted-foreground">
-        <Checkbox name="active" defaultChecked={m.active} /> attivo
-      </Label>
-      <Button type="submit" variant="outline" size="sm" disabled={pending}>
-        Salva
-      </Button>
+    <div className="flex flex-wrap items-center gap-2 rounded-lg border p-2">
+      <form action={action} className="flex flex-1 flex-wrap items-center gap-2">
+        <Input name="name" defaultValue={m.name} required className="flex-1" />
+        <Label className="flex items-center gap-1.5 font-normal text-muted-foreground">
+          <Checkbox name="active" defaultChecked={m.active} /> attivo
+        </Label>
+        <Button type="submit" variant="outline" size="sm" disabled={pending}>
+          Salva
+        </Button>
+        {state.error ? (
+          <p className="w-full text-sm text-destructive">{state.error}</p>
+        ) : null}
+      </form>
       <DeleteButton
         action={deletePaymentMethod.bind(null, m.id)}
         message={`Eliminare il metodo "${m.name}"?`}
       />
-      {state.error ? (
-        <p className="w-full text-sm text-destructive">{state.error}</p>
-      ) : null}
-    </form>
+    </div>
   );
 }
 
