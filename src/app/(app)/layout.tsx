@@ -1,5 +1,7 @@
 import { auth, signOut } from "@/auth";
 import { NavLink } from "@/components/nav-link";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default async function AppLayout({
   children,
@@ -11,37 +13,27 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <header className="border-b border-neutral-200">
+      <header className="border-b">
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-6">
-          <span className="text-sm font-semibold uppercase tracking-widest text-neutral-800">
+          <span className="text-sm font-semibold uppercase tracking-widest">
             Cassa Luxury
           </span>
           <div className="flex items-center gap-2">
-            <span className="hidden text-sm text-neutral-600 sm:inline">
+            <span className="hidden text-sm text-muted-foreground sm:inline">
               {user?.name}
             </span>
-            <span
-              className={
-                "rounded px-1.5 py-0.5 text-xs font-medium " +
-                (user?.role === "admin"
-                  ? "bg-neutral-900 text-white"
-                  : "bg-neutral-200 text-neutral-700")
-              }
-            >
+            <Badge variant={user?.role === "admin" ? "default" : "secondary"}>
               {user?.role}
-            </span>
+            </Badge>
             <form
               action={async () => {
                 "use server";
                 await signOut({ redirectTo: "/login" });
               }}
             >
-              <button
-                type="submit"
-                className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium hover:bg-neutral-100"
-              >
+              <Button type="submit" variant="outline" size="sm">
                 Esci
-              </button>
+              </Button>
             </form>
           </div>
         </div>

@@ -11,10 +11,8 @@ import { formatEUR } from "@/lib/money";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { nativeSelect } from "@/lib/ui";
 import { MovimentiTable, type MovimentoRow } from "./movimenti-table";
-
-const nativeSelect =
-  "h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]";
 
 export default async function MovimentiPage({
   searchParams,

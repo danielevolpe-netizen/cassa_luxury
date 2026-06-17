@@ -2,6 +2,8 @@ import Link from "next/link";
 import { deadlineAlert, listDeadlines } from "@/lib/data/deadlines";
 import { getTransactionsTotals } from "@/lib/data/transactions";
 import { formatEUR } from "@/lib/money";
+import { Card } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
 
 export default async function DashboardPage() {
   const [totals, deadlines] = await Promise.all([
@@ -35,20 +37,17 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <Link
-          href="/movimenti/nuovo"
-          className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700"
-        >
+        <Link href="/movimenti/nuovo" className={buttonVariants({ size: "sm" })}>
           + Nuovo movimento
         </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
-          <div key={c.label} className="rounded-xl border border-neutral-200 p-4">
-            <p className="text-sm text-neutral-500">{c.label}</p>
+          <Card key={c.label} className="gap-0 p-4">
+            <p className="text-sm text-muted-foreground">{c.label}</p>
             <p className="mt-1 text-xl font-semibold">{c.value}</p>
-          </div>
+          </Card>
         ))}
       </div>
 
@@ -67,19 +66,19 @@ export default async function DashboardPage() {
               {inScadenza} in scadenza (≤30 giorni)
             </span>
           ) : null}
-          <span className="ml-auto text-sm text-neutral-600">Vai allo scadenzario →</span>
+          <span className="ml-auto text-sm text-muted-foreground">
+            Vai allo scadenzario →
+          </span>
         </Link>
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {links.map((l) => (
-          <Link
-            key={l.href}
-            href={l.href}
-            className="rounded-xl border border-neutral-200 p-4 hover:bg-neutral-50"
-          >
-            <p className="font-medium">{l.title}</p>
-            <p className="mt-1 text-sm text-neutral-500">{l.desc}</p>
+          <Link key={l.href} href={l.href}>
+            <Card className="gap-0 p-4 transition-colors hover:bg-muted/50">
+              <p className="font-medium">{l.title}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{l.desc}</p>
+            </Card>
           </Link>
         ))}
       </div>

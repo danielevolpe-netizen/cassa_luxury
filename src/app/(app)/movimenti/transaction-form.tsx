@@ -5,6 +5,13 @@ import { useActionState, useMemo, useState } from "react";
 import type { FormState } from "./actions";
 import { computeVat, round2 } from "@/lib/money";
 import { todayISO } from "@/lib/format";
+import { nativeSelect } from "@/lib/ui";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export type Option = { value: string; label: string };
 
@@ -46,10 +53,6 @@ const EMPTY: TransactionDefaults = {
   notes: "",
 };
 
-const inputClass =
-  "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900";
-const labelClass = "text-sm font-medium text-neutral-700";
-
 export function TransactionForm({
   action,
   companies,
@@ -76,7 +79,6 @@ export function TransactionForm({
   const [vatAmount, setVatAmount] = useState(init.vatAmount);
   const [total, setTotal] = useState(init.total);
 
-  // Valori calcolati da imponibile + aliquota.
   const computed = useMemo(() => {
     const t = Number(taxable || 0);
     const r = Number(vatRate || 0);
@@ -89,15 +91,13 @@ export function TransactionForm({
   return (
     <form action={formAction} className="max-w-3xl space-y-5">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1">
-          <label className={labelClass} htmlFor="direction">
-            Tipo
-          </label>
+        <div className="space-y-1.5">
+          <Label htmlFor="direction">Tipo</Label>
           <select
             id="direction"
             name="direction"
             defaultValue={init.direction}
-            className={inputClass}
+            className={nativeSelect + " w-full"}
           >
             <option value="uscita">Uscita</option>
             <option value="entrata">Entrata</option>
@@ -105,43 +105,24 @@ export function TransactionForm({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className={labelClass} htmlFor="date">
-              Data
-            </label>
-            <input
-              id="date"
-              name="date"
-              type="date"
-              defaultValue={init.date}
-              required
-              className={inputClass}
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="date">Data</Label>
+            <Input id="date" name="date" type="date" defaultValue={init.date} required />
           </div>
-          <div className="space-y-1">
-            <label className={labelClass} htmlFor="competenceDate">
-              Competenza
-            </label>
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="competenceDate">Competenza</Label>
+            <Input
               id="competenceDate"
               name="competenceDate"
               type="date"
               defaultValue={init.competenceDate}
-              className={inputClass}
             />
           </div>
         </div>
 
-        <div className="space-y-1">
-          <label className={labelClass} htmlFor="companyId">
-            Società
-          </label>
-          <select
-            id="companyId"
-            name="companyId"
-            defaultValue={init.companyId}
-            className={inputClass}
-          >
+        <div className="space-y-1.5">
+          <Label htmlFor="companyId">Società</Label>
+          <select id="companyId" name="companyId" defaultValue={init.companyId} className={nativeSelect + " w-full"}>
             <option value="">—</option>
             {companies.map((o) => (
               <option key={o.value} value={o.value}>
@@ -151,16 +132,9 @@ export function TransactionForm({
           </select>
         </div>
 
-        <div className="space-y-1">
-          <label className={labelClass} htmlFor="categoryId">
-            Categoria
-          </label>
-          <select
-            id="categoryId"
-            name="categoryId"
-            defaultValue={init.categoryId}
-            className={inputClass}
-          >
+        <div className="space-y-1.5">
+          <Label htmlFor="categoryId">Categoria</Label>
+          <select id="categoryId" name="categoryId" defaultValue={init.categoryId} className={nativeSelect + " w-full"}>
             <option value="">—</option>
             {categories.map((o) => (
               <option key={o.value} value={o.value}>
@@ -170,16 +144,9 @@ export function TransactionForm({
           </select>
         </div>
 
-        <div className="space-y-1">
-          <label className={labelClass} htmlFor="carId">
-            Auto
-          </label>
-          <select
-            id="carId"
-            name="carId"
-            defaultValue={init.carId}
-            className={inputClass}
-          >
+        <div className="space-y-1.5">
+          <Label htmlFor="carId">Auto</Label>
+          <select id="carId" name="carId" defaultValue={init.carId} className={nativeSelect + " w-full"}>
             <option value="">—</option>
             {cars.map((o) => (
               <option key={o.value} value={o.value}>
@@ -189,16 +156,9 @@ export function TransactionForm({
           </select>
         </div>
 
-        <div className="space-y-1">
-          <label className={labelClass} htmlFor="paymentMethodId">
-            Metodo di pagamento
-          </label>
-          <select
-            id="paymentMethodId"
-            name="paymentMethodId"
-            defaultValue={init.paymentMethodId}
-            className={inputClass}
-          >
+        <div className="space-y-1.5">
+          <Label htmlFor="paymentMethodId">Metodo di pagamento</Label>
+          <select id="paymentMethodId" name="paymentMethodId" defaultValue={init.paymentMethodId} className={nativeSelect + " w-full"}>
             <option value="">—</option>
             {paymentMethods.map((o) => (
               <option key={o.value} value={o.value}>
@@ -208,59 +168,41 @@ export function TransactionForm({
           </select>
         </div>
 
-        <div className="space-y-1">
-          <label className={labelClass} htmlFor="counterparty">
-            Mittente / Destinatario
-          </label>
-          <input
-            id="counterparty"
-            name="counterparty"
-            defaultValue={init.counterparty}
-            className={inputClass}
-          />
+        <div className="space-y-1.5">
+          <Label htmlFor="counterparty">Mittente / Destinatario</Label>
+          <Input id="counterparty" name="counterparty" defaultValue={init.counterparty} />
         </div>
 
-        <div className="space-y-1">
-          <label className={labelClass} htmlFor="description">
-            Descrizione
-          </label>
-          <input
-            id="description"
-            name="description"
-            defaultValue={init.description}
-            className={inputClass}
-          />
+        <div className="space-y-1.5">
+          <Label htmlFor="description">Descrizione</Label>
+          <Input id="description" name="description" defaultValue={init.description} />
         </div>
       </div>
 
       {/* Importi */}
-      <div className="rounded-lg border border-neutral-200 p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-neutral-800">Importi</h2>
-          <label className="flex items-center gap-2 text-sm text-neutral-600">
-            <input
-              type="checkbox"
+      <Card className="gap-3 p-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold">Importi</h2>
+          <Label className="flex items-center gap-2 font-normal text-muted-foreground">
+            <Checkbox
               checked={manual}
-              onChange={(e) => {
-                const on = e.target.checked;
+              onCheckedChange={(v) => {
+                const on = v === true;
                 setManual(on);
                 if (on) {
-                  // Passa a manuale partendo dai valori calcolati.
                   setVatAmount(computed.vat.toFixed(2));
                   setTotal(computed.total.toFixed(2));
                 }
               }}
             />
             Importi manuali
-          </label>
+          </Label>
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <div className="space-y-1">
-            <label className={labelClass} htmlFor="taxable">
-              Imponibile €
-            </label>
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="taxable">Imponibile €</Label>
+            <Input
               id="taxable"
               name="taxable"
               type="number"
@@ -269,15 +211,12 @@ export function TransactionForm({
               value={taxable}
               onChange={(e) => setTaxable(e.target.value)}
               required
-              className={inputClass}
             />
           </div>
 
-          <div className="space-y-1">
-            <label className={labelClass} htmlFor="vatRate">
-              Aliquota IVA %
-            </label>
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="vatRate">Aliquota IVA %</Label>
+            <Input
               id="vatRate"
               name="vatRate"
               type="number"
@@ -286,15 +225,12 @@ export function TransactionForm({
               max="100"
               value={vatRate}
               onChange={(e) => setVatRate(e.target.value)}
-              className={inputClass}
             />
           </div>
 
-          <div className="space-y-1">
-            <label className={labelClass} htmlFor="vatAmount">
-              IVA €
-            </label>
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="vatAmount">IVA €</Label>
+            <Input
               id="vatAmount"
               name="vatAmount"
               type="number"
@@ -302,15 +238,13 @@ export function TransactionForm({
               value={shownVat}
               readOnly={!manual}
               onChange={(e) => setVatAmount(e.target.value)}
-              className={inputClass + (manual ? "" : " bg-neutral-100")}
+              className={manual ? "" : "bg-muted"}
             />
           </div>
 
-          <div className="space-y-1">
-            <label className={labelClass} htmlFor="total">
-              Totale €
-            </label>
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="total">Totale €</Label>
+            <Input
               id="total"
               name="total"
               type="number"
@@ -318,81 +252,48 @@ export function TransactionForm({
               value={shownTotal}
               readOnly={!manual}
               onChange={(e) => setTotal(e.target.value)}
-              className={
-                inputClass +
-                " font-semibold" +
-                (manual ? "" : " bg-neutral-100")
-              }
+              className={"font-semibold " + (manual ? "" : "bg-muted")}
             />
           </div>
 
-          <div className="space-y-1">
-            <label className={labelClass} htmlFor="fee">
-              Fee € (commissione/margine)
-            </label>
-            <input
-              id="fee"
-              name="fee"
-              type="number"
-              step="0.01"
-              defaultValue={init.fee || "0"}
-              className={inputClass}
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="fee">Fee € (commissione/margine)</Label>
+            <Input id="fee" name="fee" type="number" step="0.01" defaultValue={init.fee || "0"} />
           </div>
 
-          <div className="space-y-1">
-            <label className={labelClass} htmlFor="amountPaid">
-              Importo pagato €
-            </label>
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="amountPaid">Importo pagato €</Label>
+            <Input
               id="amountPaid"
               name="amountPaid"
               type="number"
               step="0.01"
               defaultValue={init.amountPaid}
               placeholder="vuoto = non pagato"
-              className={inputClass}
             />
           </div>
         </div>
-        <p className="mt-2 text-xs text-neutral-500">
+        <p className="text-xs text-muted-foreground">
           Residuo:{" "}
-          {round2(
-            Number(shownTotal || 0) - Number(init.amountPaid || 0),
-          ).toFixed(2)}{" "}
-          € (ricalcolato al salvataggio)
+          {round2(Number(shownTotal || 0) - Number(init.amountPaid || 0)).toFixed(2)} €
+          (ricalcolato al salvataggio)
         </p>
-      </div>
+      </Card>
 
-      <div className="space-y-1">
-        <label className={labelClass} htmlFor="notes">
-          Note
-        </label>
-        <textarea
-          id="notes"
-          name="notes"
-          defaultValue={init.notes}
-          rows={2}
-          className={inputClass}
-        />
+      <div className="space-y-1.5">
+        <Label htmlFor="notes">Note</Label>
+        <Textarea id="notes" name="notes" defaultValue={init.notes} rows={2} />
       </div>
 
       {state.error ? (
-        <p className="text-sm text-red-600">{state.error}</p>
+        <p className="text-sm text-destructive">{state.error}</p>
       ) : null}
 
       <div className="flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-60"
-        >
+        <Button type="submit" disabled={pending}>
           {pending ? "Salvataggio…" : submitLabel}
-        </button>
-        <Link
-          href="/movimenti"
-          className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-100"
-        >
+        </Button>
+        <Link href="/movimenti" className={buttonVariants({ variant: "outline" })}>
           Annulla
         </Link>
       </div>

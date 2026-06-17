@@ -2,6 +2,9 @@
 
 import { useActionState } from "react";
 import { authenticate, type LoginState } from "./actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const initialState: LoginState = {};
 
@@ -13,45 +16,29 @@ export function LoginForm() {
 
   return (
     <form action={formAction} className="space-y-4">
-      <div className="space-y-1">
-        <label htmlFor="email" className="text-sm font-medium">
-          Email
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
-        />
+      <div className="space-y-1.5">
+        <Label htmlFor="email">Email</Label>
+        <Input id="email" name="email" type="email" autoComplete="email" required />
       </div>
 
-      <div className="space-y-1">
-        <label htmlFor="password" className="text-sm font-medium">
-          Password
-        </label>
-        <input
+      <div className="space-y-1.5">
+        <Label htmlFor="password">Password</Label>
+        <Input
           id="password"
           name="password"
           type="password"
           autoComplete="current-password"
           required
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
         />
       </div>
 
       {state.error ? (
-        <p className="text-sm text-red-600">{state.error}</p>
+        <p className="text-sm text-destructive">{state.error}</p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-700 disabled:opacity-60"
-      >
+      <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Accesso in corso…" : "Accedi"}
-      </button>
+      </Button>
     </form>
   );
 }
