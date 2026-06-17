@@ -11,6 +11,19 @@ import { CarForm } from "../car-form";
 import { DeleteButton } from "@/components/delete-button";
 import { LeasingManager } from "../leasing-manager";
 import { DeadlinesManager } from "../deadlines-manager";
+import { buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+const sectionTitle =
+  "text-sm font-semibold uppercase tracking-wide text-muted-foreground";
 
 export default async function CarDetailPage({
   params,
@@ -31,11 +44,11 @@ export default async function CarDetailPage({
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/flotta" className="text-sm text-neutral-500 hover:underline">
+          <Link href="/flotta" className="text-sm text-muted-foreground hover:underline">
             ← Flotta
           </Link>
           <h1 className="text-2xl font-semibold tracking-tight">{car.code}</h1>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-muted-foreground">
             {car.brand ?? ""} {car.company?.name ? `· ${car.company.name}` : ""}
           </p>
         </div>
@@ -50,9 +63,7 @@ export default async function CarDetailPage({
 
       {/* Dati auto */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          Dati auto
-        </h2>
+        <h2 className={sectionTitle}>Dati auto</h2>
         {isAdmin ? (
           <CarForm
             action={updateCar.bind(null, car.id)}
@@ -69,20 +80,18 @@ export default async function CarDetailPage({
             submitLabel="Salva modifiche"
           />
         ) : (
-          <div className="rounded-lg border border-neutral-200 p-4 text-sm">
+          <Card className="gap-1 p-4 text-sm">
             <p>Modello: {car.model}</p>
             <p>Targa: {car.plate ?? "—"}</p>
             <p>Stato: {car.status}</p>
             {car.notes ? <p>Note: {car.notes}</p> : null}
-          </div>
+          </Card>
         )}
       </section>
 
       {/* Leasing */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          Contratti di leasing
-        </h2>
+        <h2 className={sectionTitle}>Contratti di leasing</h2>
         <LeasingManager
           carId={car.id}
           isAdmin={isAdmin}
@@ -104,9 +113,7 @@ export default async function CarDetailPage({
 
       {/* Scadenze */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          Scadenze
-        </h2>
+        <h2 className={sectionTitle}>Scadenze</h2>
         <DeadlinesManager
           isAdmin={isAdmin}
           fixedCarId={car.id}
@@ -125,58 +132,52 @@ export default async function CarDetailPage({
 
       {/* Movimenti collegati */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          Movimenti collegati ({txs.length})
-        </h2>
-        <div className="overflow-x-auto rounded-lg border border-neutral-200">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-left text-xs uppercase text-neutral-500">
-              <tr>
-                <th className="px-3 py-2">Data</th>
-                <th className="px-3 py-2">Tipo</th>
-                <th className="px-3 py-2">Descrizione</th>
-                <th className="px-3 py-2">Categoria</th>
-                <th className="px-3 py-2 text-right">Totale</th>
-                <th className="px-3 py-2"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
+        <h2 className={sectionTitle}>Movimenti collegati ({txs.length})</h2>
+        <div className="overflow-x-auto rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Descrizione</TableHead>
+                <TableHead>Categoria</TableHead>
+                <TableHead className="text-right">Totale</TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {txs.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-3 py-6 text-center text-neutral-500">
+                <TableRow>
+                  <TableCell colSpan={6} className="h-20 text-center text-muted-foreground">
                     Nessun movimento collegato a questa auto.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 txs.map((t) => (
-                  <tr key={t.id} className="hover:bg-neutral-50">
-                    <td className="whitespace-nowrap px-3 py-2">{formatDate(t.date)}</td>
-                    <td className="px-3 py-2">
-                      {t.direction === "entrata" ? "Entrata" : "Uscita"}
-                    </td>
-                    <td className="px-3 py-2">
+                  <TableRow key={t.id}>
+                    <TableCell className="whitespace-nowrap">{formatDate(t.date)}</TableCell>
+                    <TableCell>{t.direction === "entrata" ? "Entrata" : "Uscita"}</TableCell>
+                    <TableCell>
                       {t.counterparty ?? "—"}
                       {t.description ? (
-                        <span className="text-neutral-500"> · {t.description}</span>
+                        <span className="text-muted-foreground"> · {t.description}</span>
                       ) : null}
-                    </td>
-                    <td className="px-3 py-2">{t.category?.name ?? "—"}</td>
-                    <td className="px-3 py-2 text-right font-medium">
-                      {formatEUR(t.total)}
-                    </td>
-                    <td className="px-3 py-2 text-right">
+                    </TableCell>
+                    <TableCell>{t.category?.name ?? "—"}</TableCell>
+                    <TableCell className="text-right font-medium">{formatEUR(t.total)}</TableCell>
+                    <TableCell className="text-right">
                       <Link
                         href={`/movimenti/${t.id}`}
-                        className="text-neutral-700 hover:underline"
+                        className={buttonVariants({ variant: "ghost", size: "sm" })}
                       >
                         Apri
                       </Link>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </section>
     </div>

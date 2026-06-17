@@ -2,12 +2,12 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import type { FormState } from "./actions";
+import { nativeSelect } from "@/lib/ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export type Option = { value: string; label: string };
-
-const input =
-  "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900";
-const label = "text-sm font-medium text-neutral-700";
 
 export type CarDefaults = {
   code: string;
@@ -44,47 +44,31 @@ export function CarForm({
       action={formAction}
       className="grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2"
     >
-      <div className="space-y-1 sm:col-span-2">
-        <label className={label} htmlFor="code">
-          Codice (Modello | Targa) *
-        </label>
-        <input
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label htmlFor="code">Codice (Modello | Targa) *</Label>
+        <Input
           id="code"
           name="code"
           defaultValue={defaults?.code ?? ""}
           required
           placeholder="es. 812 GTS | GM812BW"
-          className={input}
         />
       </div>
-      <div className="space-y-1">
-        <label className={label} htmlFor="brand">
-          Brand
-        </label>
-        <input id="brand" name="brand" defaultValue={defaults?.brand ?? ""} className={input} />
+      <div className="space-y-1.5">
+        <Label htmlFor="brand">Brand</Label>
+        <Input id="brand" name="brand" defaultValue={defaults?.brand ?? ""} />
       </div>
-      <div className="space-y-1">
-        <label className={label} htmlFor="model">
-          Modello *
-        </label>
-        <input id="model" name="model" defaultValue={defaults?.model ?? ""} required className={input} />
+      <div className="space-y-1.5">
+        <Label htmlFor="model">Modello *</Label>
+        <Input id="model" name="model" defaultValue={defaults?.model ?? ""} required />
       </div>
-      <div className="space-y-1">
-        <label className={label} htmlFor="plate">
-          Targa
-        </label>
-        <input id="plate" name="plate" defaultValue={defaults?.plate ?? ""} className={input} />
+      <div className="space-y-1.5">
+        <Label htmlFor="plate">Targa</Label>
+        <Input id="plate" name="plate" defaultValue={defaults?.plate ?? ""} />
       </div>
-      <div className="space-y-1">
-        <label className={label} htmlFor="companyId">
-          Società
-        </label>
-        <select
-          id="companyId"
-          name="companyId"
-          defaultValue={defaults?.companyId ?? ""}
-          className={input}
-        >
+      <div className="space-y-1.5">
+        <Label htmlFor="companyId">Società</Label>
+        <select id="companyId" name="companyId" defaultValue={defaults?.companyId ?? ""} className={nativeSelect + " w-full"}>
           <option value="">—</option>
           {companies.map((o) => (
             <option key={o.value} value={o.value}>
@@ -93,40 +77,27 @@ export function CarForm({
           ))}
         </select>
       </div>
-      <div className="space-y-1">
-        <label className={label} htmlFor="status">
-          Stato
-        </label>
-        <select
-          id="status"
-          name="status"
-          defaultValue={defaults?.status ?? "attiva"}
-          className={input}
-        >
+      <div className="space-y-1.5">
+        <Label htmlFor="status">Stato</Label>
+        <select id="status" name="status" defaultValue={defaults?.status ?? "attiva"} className={nativeSelect + " w-full"}>
           <option value="attiva">Attiva</option>
           <option value="in_arrivo">In arrivo</option>
           <option value="venduta">Venduta</option>
         </select>
       </div>
-      <div className="space-y-1 sm:col-span-2">
-        <label className={label} htmlFor="notes">
-          Note
-        </label>
-        <input id="notes" name="notes" defaultValue={defaults?.notes ?? ""} className={input} />
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label htmlFor="notes">Note</Label>
+        <Input id="notes" name="notes" defaultValue={defaults?.notes ?? ""} />
       </div>
 
       {state.error ? (
-        <p className="text-sm text-red-600 sm:col-span-2">{state.error}</p>
+        <p className="text-sm text-destructive sm:col-span-2">{state.error}</p>
       ) : null}
 
       <div className="sm:col-span-2">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-60"
-        >
+        <Button type="submit" disabled={pending}>
           {pending ? "Salvataggio…" : submitLabel}
-        </button>
+        </Button>
       </div>
     </form>
   );

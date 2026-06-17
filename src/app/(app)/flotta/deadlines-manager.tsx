@@ -8,6 +8,10 @@ import {
   type FormState,
 } from "./actions";
 import { DeleteButton } from "@/components/delete-button";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { nativeSelect } from "@/lib/ui";
 import { formatDate } from "@/lib/format";
 import { formatEUR } from "@/lib/money";
 
@@ -24,8 +28,6 @@ export type DeadlineItem = {
   notes: string | null;
 };
 
-const input =
-  "w-full rounded-md border border-neutral-300 px-2 py-1.5 text-sm outline-none focus:border-neutral-900";
 const empty: FormState = {};
 
 const TYPES = [
@@ -41,7 +43,6 @@ const STATUSES = [
   { value: "annullata", label: "Annullata" },
 ];
 
-// Versione pura dell'alert (no import server-side).
 function alertOf(dueDate: string, status: string) {
   if (status !== "aperta") return "chiusa";
   const due = new Date(dueDate + "T00:00:00");
@@ -57,10 +58,14 @@ function AlertBadge({ dueDate, status }: { dueDate: string; status: string }) {
     scaduta: ["Scaduta", "bg-red-100 text-red-700"],
     in_scadenza: ["In scadenza", "bg-amber-100 text-amber-700"],
     ok: ["OK", "bg-green-100 text-green-700"],
-    chiusa: [status === "pagata" ? "Pagata" : "Chiusa", "bg-neutral-200 text-neutral-600"],
+    chiusa: [status === "pagata" ? "Pagata" : "Chiusa", "bg-muted text-muted-foreground"],
   };
   const [label, cls] = map[a];
-  return <span className={"rounded px-1.5 py-0.5 text-xs font-medium " + cls}>{label}</span>;
+  return (
+    <Badge variant="outline" className={"border-transparent " + cls}>
+      {label}
+    </Badge>
+  );
 }
 
 function Fields({
@@ -77,7 +82,7 @@ function Fields({
       {fixedCarId ? (
         <input type="hidden" name="carId" value={fixedCarId} />
       ) : (
-        <select name="carId" defaultValue={d?.carId ?? ""} className={input + " w-48"}>
+        <select name="carId" defaultValue={d?.carId ?? ""} className={nativeSelect + " w-48"}>
           <option value="">— nessuna auto —</option>
           {cars?.map((o) => (
             <option key={o.value} value={o.value}>
@@ -86,23 +91,23 @@ function Fields({
           ))}
         </select>
       )}
-      <select name="type" defaultValue={d?.type ?? "assicurazione"} className={input + " w-36"}>
+      <select name="type" defaultValue={d?.type ?? "assicurazione"} className={nativeSelect + " w-36"}>
         {TYPES.map((t) => (
           <option key={t.value} value={t.value}>
             {t.label}
           </option>
         ))}
       </select>
-      <input name="dueDate" type="date" defaultValue={d?.dueDate ?? ""} required className={input + " w-40"} />
-      <input name="amount" type="number" step="0.01" placeholder="importo €" defaultValue={d?.amount ?? ""} className={input + " w-28"} />
-      <select name="status" defaultValue={d?.status ?? "aperta"} className={input + " w-32"}>
+      <Input name="dueDate" type="date" defaultValue={d?.dueDate ?? ""} required className="w-40" />
+      <Input name="amount" type="number" step="0.01" placeholder="importo €" defaultValue={d?.amount ?? ""} className="w-28" />
+      <select name="status" defaultValue={d?.status ?? "aperta"} className={nativeSelect + " w-32"}>
         {STATUSES.map((s) => (
           <option key={s.value} value={s.value}>
             {s.label}
           </option>
         ))}
       </select>
-      <input name="notes" placeholder="note" defaultValue={d?.notes ?? ""} className={input + " flex-1"} />
+      <Input name="notes" placeholder="note" defaultValue={d?.notes ?? ""} className="flex-1" />
     </div>
   );
 }
@@ -121,17 +126,17 @@ function EditRow({
     empty,
   );
   return (
-    <form action={action} className="space-y-2 rounded-lg border border-neutral-200 p-2">
+    <form action={action} className="flex flex-col gap-2 rounded-lg border p-2">
       <div className="flex items-center gap-2">
         <AlertBadge dueDate={d.dueDate} status={d.status} />
         <Fields d={d} cars={cars} fixedCarId={fixedCarId} />
       </div>
       <div className="flex items-center gap-3">
-        <button type="submit" disabled={pending} className="rounded-md border border-neutral-300 px-3 py-1 text-sm font-medium hover:bg-neutral-100 disabled:opacity-60">
+        <Button type="submit" variant="outline" size="sm" disabled={pending}>
           Salva
-        </button>
+        </Button>
         <DeleteButton action={deleteDeadline.bind(null, d.id)} message="Eliminare questa scadenza?" />
-        {state.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
+        {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
       </div>
     </form>
   );
@@ -139,13 +144,13 @@ function EditRow({
 
 function ReadRow({ d }: { d: DeadlineItem }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-neutral-200 p-2 text-sm">
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border p-2 text-sm">
       <AlertBadge dueDate={d.dueDate} status={d.status} />
       <span className="font-medium">{TYPES.find((t) => t.value === d.type)?.label}</span>
-      {d.carCode ? <span className="text-neutral-500">{d.carCode}</span> : null}
+      {d.carCode ? <span className="text-muted-foreground">{d.carCode}</span> : null}
       <span>{formatDate(d.dueDate)}</span>
       <span>{d.amount ? formatEUR(d.amount) : ""}</span>
-      {d.notes ? <span className="text-neutral-500">{d.notes}</span> : null}
+      {d.notes ? <span className="text-muted-foreground">{d.notes}</span> : null}
     </div>
   );
 }
@@ -158,18 +163,14 @@ function CreateRow({ cars, fixedCarId }: { cars?: Option[]; fixedCarId?: string 
   }, [state]);
 
   return (
-    <form
-      ref={ref}
-      action={action}
-      className="space-y-2 rounded-lg border border-dashed border-neutral-300 p-2"
-    >
-      <p className="text-sm font-medium text-neutral-600">Aggiungi scadenza</p>
+    <form ref={ref} action={action} className="flex flex-col gap-2 rounded-lg border border-dashed p-2">
+      <p className="text-sm font-medium text-muted-foreground">Aggiungi scadenza</p>
       <Fields cars={cars} fixedCarId={fixedCarId} />
       <div className="flex items-center gap-3">
-        <button type="submit" disabled={pending} className="rounded-md bg-neutral-900 px-3 py-1 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-60">
+        <Button type="submit" size="sm" disabled={pending}>
           Aggiungi
-        </button>
-        {state.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
+        </Button>
+        {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
       </div>
     </form>
   );
@@ -189,7 +190,7 @@ export function DeadlinesManager({
   return (
     <div className="space-y-2">
       {items.length === 0 ? (
-        <p className="text-sm text-neutral-500">Nessuna scadenza.</p>
+        <p className="text-sm text-muted-foreground">Nessuna scadenza.</p>
       ) : (
         items.map((d) =>
           isAdmin ? (
