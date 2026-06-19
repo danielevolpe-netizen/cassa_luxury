@@ -15,6 +15,13 @@
       "when": 1781846119975,
       "tag": "0001_military_outlaw_kid",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781857670085,
+      "tag": "0002_clever_blindfold",
+      "breakpoints": true
     }
   ]
 }

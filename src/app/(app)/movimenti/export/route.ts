@@ -6,7 +6,7 @@ import {
 } from "@/lib/data/transactions";
 import { getRentCompanyMap, getRentVehicleMap } from "@/lib/data/rent";
 import { formatDate } from "@/lib/format";
-import { residuo, toNumber } from "@/lib/money";
+import { toNumber } from "@/lib/money";
 import {
   exportHeaders,
   toCsv,
@@ -17,7 +17,6 @@ import {
 
 const columns: ExportColumn[] = [
   { header: "Data", width: 12 },
-  { header: "Competenza", width: 12 },
   { header: "Tipo", width: 10 },
   { header: "Mittente / Destinatario", width: 26 },
   { header: "Descrizione", width: 30 },
@@ -28,8 +27,6 @@ const columns: ExportColumn[] = [
   { header: "IVA", numeric: true },
   { header: "Fee", numeric: true },
   { header: "Totale", numeric: true },
-  { header: "Importo pagato", numeric: true },
-  { header: "Residuo", numeric: true },
   { header: "Metodo", width: 14 },
   { header: "Note", width: 30 },
 ];
@@ -48,7 +45,6 @@ export async function GET(req: NextRequest) {
     carId: sp.get("carId") ?? undefined,
     from: sp.get("from") ?? undefined,
     to: sp.get("to") ?? undefined,
-    stato: (sp.get("stato") as TransactionFilters["stato"]) || undefined,
   };
 
   const [rows, companyMap, vehicleMap] = await Promise.all([
@@ -59,7 +55,6 @@ export async function GET(req: NextRequest) {
 
   const data: Cell[][] = rows.map((t) => [
     formatDate(t.date),
-    t.competenceDate ? formatDate(t.competenceDate) : "",
     t.direction === "entrata" ? "Entrata" : "Uscita",
     t.counterparty ?? "",
     t.description ?? "",
@@ -70,8 +65,6 @@ export async function GET(req: NextRequest) {
     toNumber(t.vatAmount),
     toNumber(t.fee),
     toNumber(t.total),
-    t.amountPaid === null ? null : toNumber(t.amountPaid),
-    residuo(t.total, t.amountPaid),
     t.paymentMethod?.name ?? "",
     t.notes ?? "",
   ]);

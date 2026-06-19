@@ -7,7 +7,7 @@ import {
   type TransactionFilters,
 } from "@/lib/data/transactions";
 import { getRentCompanyMap, getRentVehicleMap } from "@/lib/data/rent";
-import { residuo, toNumber } from "@/lib/money";
+import { toNumber } from "@/lib/money";
 import { formatEUR } from "@/lib/money";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,7 +29,6 @@ export default async function MovimentiPage({
     carId: sp.carId,
     from: sp.from,
     to: sp.to,
-    stato: sp.stato as TransactionFilters["stato"],
   };
 
   const [user, lookups, rows, totals, companyMap, vehicleMap] =
@@ -56,8 +55,6 @@ export default async function MovimentiPage({
     taxable: toNumber(t.taxable),
     vatAmount: toNumber(t.vatAmount),
     total: toNumber(t.total),
-    residuo: residuo(t.total, t.amountPaid),
-    paid: toNumber(t.amountPaid),
   }));
 
   const exportParams = new URLSearchParams();
@@ -72,7 +69,6 @@ export default async function MovimentiPage({
     { label: "Entrate", value: formatEUR(totals.entrate), cls: "text-green-700" },
     { label: "Uscite", value: formatEUR(totals.uscite), cls: "text-red-700" },
     { label: "Saldo", value: formatEUR(totals.saldo), cls: "" },
-    { label: "Da incassare", value: formatEUR(totals.residuoEntrate), cls: "" },
   ];
 
   return (
@@ -133,12 +129,6 @@ export default async function MovimentiPage({
             </option>
           ))}
         </select>
-        <select name="stato" defaultValue={sp.stato ?? ""} className={nativeSelect}>
-          <option value="">Tutti gli stati</option>
-          <option value="pagato">Pagato</option>
-          <option value="parziale">Parziale</option>
-          <option value="nonpagato">Non pagato</option>
-        </select>
         <Input type="date" name="from" defaultValue={sp.from ?? ""} className="h-9 w-40" />
         <Input type="date" name="to" defaultValue={sp.to ?? ""} className="h-9 w-40" />
         <Button type="submit" size="sm">
@@ -150,7 +140,7 @@ export default async function MovimentiPage({
       </form>
 
       {/* Totali */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {totalCards.map((c) => (
           <Card key={c.label} className="gap-0 p-4">
             <p className="text-xs text-muted-foreground">{c.label}</p>

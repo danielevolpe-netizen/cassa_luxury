@@ -105,7 +105,6 @@ export const transactions = pgTable("transactions", {
   id: uuid("id").primaryKey().defaultRandom(),
   direction: transactionDirection("direction").notNull(),
   date: date("date").notNull(),
-  competenceDate: date("competence_date"),
   counterparty: text("counterparty"),
   description: text("description"),
   // UUID veicolo Numbers Rent (no FK).
@@ -122,7 +121,6 @@ export const transactions = pgTable("transactions", {
   vatAmount: money("vat_amount"),
   fee: money("fee"),
   total: money("total"),
-  amountPaid: moneyNullable("amount_paid"),
   paymentMethodId: uuid("payment_method_id").references(
     () => paymentMethods.id,
     { onDelete: "set null" },

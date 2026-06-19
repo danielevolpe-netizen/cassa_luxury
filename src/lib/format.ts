@@ -20,14 +20,3 @@ export function formatDate(
 export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
-
-/** Periodo di competenza "MM/YYYY" da una data ISO. */
-export function competencePeriod(
-  value: string | Date | null | undefined,
-): string {
-  if (!value) return "";
-  const d = typeof value === "string" ? new Date(value + "T00:00:00") : value;
-  if (Number.isNaN(d.getTime())) return "";
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  return `${mm}/${d.getFullYear()}`;
-}

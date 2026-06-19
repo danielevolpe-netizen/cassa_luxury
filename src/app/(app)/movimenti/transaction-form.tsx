@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 import type { FormState } from "./actions";
-import { computeVat, round2 } from "@/lib/money";
+import { computeVat } from "@/lib/money";
 import { todayISO } from "@/lib/format";
 import { nativeSelect } from "@/lib/ui";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -18,7 +18,6 @@ export type Option = { value: string; label: string };
 export type TransactionDefaults = {
   direction: "entrata" | "uscita";
   date: string;
-  competenceDate: string;
   companyId: string;
   categoryId: string;
   carId: string;
@@ -29,7 +28,6 @@ export type TransactionDefaults = {
   vatAmount: string;
   fee: string;
   total: string;
-  amountPaid: string;
   paymentMethodId: string;
   notes: string;
 };
@@ -37,7 +35,6 @@ export type TransactionDefaults = {
 const EMPTY: TransactionDefaults = {
   direction: "uscita",
   date: "",
-  competenceDate: "",
   companyId: "",
   categoryId: "",
   carId: "",
@@ -48,7 +45,6 @@ const EMPTY: TransactionDefaults = {
   vatAmount: "",
   fee: "",
   total: "",
-  amountPaid: "",
   paymentMethodId: "",
   notes: "",
 };
@@ -104,20 +100,9 @@ export function TransactionForm({
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="date">Data</Label>
-            <Input id="date" name="date" type="date" defaultValue={init.date} required />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="competenceDate">Competenza</Label>
-            <Input
-              id="competenceDate"
-              name="competenceDate"
-              type="date"
-              defaultValue={init.competenceDate}
-            />
-          </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="date">Data</Label>
+          <Input id="date" name="date" type="date" defaultValue={init.date} required />
         </div>
 
         <div className="space-y-1.5">
@@ -260,24 +245,7 @@ export function TransactionForm({
             <Label htmlFor="fee">Fee € (commissione/margine)</Label>
             <Input id="fee" name="fee" type="number" step="0.01" defaultValue={init.fee || "0"} />
           </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="amountPaid">Importo pagato €</Label>
-            <Input
-              id="amountPaid"
-              name="amountPaid"
-              type="number"
-              step="0.01"
-              defaultValue={init.amountPaid}
-              placeholder="vuoto = non pagato"
-            />
-          </div>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Residuo:{" "}
-          {round2(Number(shownTotal || 0) - Number(init.amountPaid || 0)).toFixed(2)} €
-          (ricalcolato al salvataggio)
-        </p>
       </Card>
 
       <div className="space-y-1.5">

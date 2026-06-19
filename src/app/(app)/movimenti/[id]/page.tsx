@@ -23,7 +23,6 @@ export default async function ModificaMovimentoPage({
   const defaults: Partial<TransactionDefaults> = {
     direction: tx.direction,
     date: tx.date,
-    competenceDate: tx.competenceDate ?? "",
     companyId: tx.companyId ?? "",
     categoryId: tx.categoryId ?? "",
     carId: tx.carId ?? "",
@@ -34,7 +33,6 @@ export default async function ModificaMovimentoPage({
     vatAmount: tx.vatAmount,
     fee: tx.fee,
     total: tx.total,
-    amountPaid: tx.amountPaid ?? "",
     paymentMethodId: tx.paymentMethodId ?? "",
     notes: tx.notes ?? "",
   };

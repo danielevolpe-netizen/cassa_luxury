@@ -24,18 +24,9 @@ const optionalId = z
   .nullable()
   .transform((v) => v ?? null);
 
-const optionalNumber = z
-  .union([z.coerce.number(), z.literal("")])
-  .optional()
-  .transform((v) => (v === "" || v === undefined ? null : Number(v)));
-
 const schema = z.object({
   direction: z.enum(["entrata", "uscita"]),
   date: z.string().min(1, "La data è obbligatoria."),
-  competenceDate: z
-    .string()
-    .optional()
-    .transform((v) => (v ? v : null)),
   counterparty: optionalText,
   description: optionalText,
   carId: optionalId,
@@ -46,7 +37,6 @@ const schema = z.object({
   vatAmount: z.coerce.number(),
   fee: z.coerce.number(),
   total: z.coerce.number(),
-  amountPaid: optionalNumber,
   paymentMethodId: optionalId,
   notes: optionalText,
 });
@@ -65,7 +55,6 @@ function toValues(data: z.infer<typeof schema>) {
   return {
     direction: data.direction,
     date: data.date,
-    competenceDate: data.competenceDate,
     counterparty: data.counterparty,
     description: data.description,
     carId: data.carId,
@@ -76,7 +65,6 @@ function toValues(data: z.infer<typeof schema>) {
     vatAmount: toDecimalString(data.vatAmount),
     fee: toDecimalString(data.fee),
     total: toDecimalString(data.total),
-    amountPaid: data.amountPaid === null ? null : toDecimalString(data.amountPaid),
     paymentMethodId: data.paymentMethodId,
     notes: data.notes,
   };

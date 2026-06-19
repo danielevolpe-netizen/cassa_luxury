@@ -10,10 +10,7 @@ export type TransactionFilters = {
   carId?: string;
   from?: string; // YYYY-MM-DD
   to?: string; // YYYY-MM-DD
-  stato?: "pagato" | "parziale" | "nonpagato";
 };
-
-const coalescePaid = sql`coalesce(${transactions.amountPaid}, 0)`;
 
 function buildWhere(f: TransactionFilters): SQL | undefined {
   const conds: SQL[] = [];
@@ -35,16 +32,6 @@ function buildWhere(f: TransactionFilters): SQL | undefined {
     if (text) conds.push(text);
   }
 
-  if (f.stato === "pagato") {
-    conds.push(sql`${coalescePaid} >= ${transactions.total}`);
-  } else if (f.stato === "nonpagato") {
-    conds.push(sql`${coalescePaid} = 0`);
-  } else if (f.stato === "parziale") {
-    conds.push(
-      sql`${coalescePaid} > 0 and ${coalescePaid} < ${transactions.total}`,
-    );
-  }
-
   return conds.length ? and(...conds) : undefined;
 }
 
@@ -64,13 +51,12 @@ export async function listTransactions(
   });
 }
 
-/** Totali aggregati sull'insieme filtrato (entrate, uscite, residui). */
+/** Totali aggregati sull'insieme filtrato (entrate, uscite, saldo). */
 export async function getTransactionsTotals(f: TransactionFilters = {}) {
   const rows = await db
     .select({
       direction: transactions.direction,
       total: sql<string>`sum(${transactions.total})`,
-      residuo: sql<string>`sum(${transactions.total} - ${coalescePaid})`,
     })
     .from(transactions)
     .where(buildWhere(f))
@@ -78,26 +64,12 @@ export async function getTransactionsTotals(f: TransactionFilters = {}) {
 
   let entrate = 0;
   let uscite = 0;
-  let residuoEntrate = 0;
-  let residuoUscite = 0;
   for (const r of rows) {
     const tot = Number(r.total ?? 0);
-    const res = Number(r.residuo ?? 0);
-    if (r.direction === "entrata") {
-      entrate = tot;
-      residuoEntrate = res;
-    } else {
-      uscite = tot;
-      residuoUscite = res;
-    }
+    if (r.direction === "entrata") entrate = tot;
+    else uscite = tot;
   }
-  return {
-    entrate,
-    uscite,
-    saldo: entrate - uscite,
-    residuoEntrate,
-    residuoUscite,
-  };
+  return { entrate, uscite, saldo: entrate - uscite };
 }
 
 /** Singolo movimento per id. */

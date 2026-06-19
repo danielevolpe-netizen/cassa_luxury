@@ -23,7 +23,6 @@ export default async function DashboardPage() {
     { label: "Entrate (totali)", value: formatEUR(totals.entrate) },
     { label: "Uscite (totali)", value: formatEUR(totals.uscite) },
     { label: "Saldo", value: formatEUR(totals.saldo) },
-    { label: "Da incassare", value: formatEUR(totals.residuoEntrate) },
   ];
 
   const links = [
@@ -42,7 +41,7 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {cards.map((c) => (
           <Card key={c.label} className="gap-0 p-4">
             <p className="text-sm text-muted-foreground">{c.label}</p>

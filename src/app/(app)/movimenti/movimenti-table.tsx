@@ -22,16 +22,7 @@ export type MovimentoRow = {
   taxable: number;
   vatAmount: number;
   total: number;
-  residuo: number;
-  paid: number;
 };
-
-function stato(total: number, paid: number) {
-  if (paid <= 0) return { label: "Non pagato", cls: "bg-red-100 text-red-700" };
-  if (paid < total)
-    return { label: "Parziale", cls: "bg-amber-100 text-amber-700" };
-  return { label: "Pagato", cls: "bg-green-100 text-green-700" };
-}
 
 const right = { meta: { align: "right" } } as const;
 
@@ -118,24 +109,6 @@ export function MovimentiTable({
       cell: ({ row }) => (
         <span className="font-semibold">{formatEUR(row.original.total)}</span>
       ),
-    },
-    {
-      accessorKey: "residuo",
-      header: "Residuo",
-      ...right,
-      cell: ({ row }) => formatEUR(row.original.residuo),
-    },
-    {
-      id: "stato",
-      header: "Stato",
-      cell: ({ row }) => {
-        const s = stato(row.original.total, row.original.paid);
-        return (
-          <Badge variant="outline" className={"border-transparent " + s.cls}>
-            {s.label}
-          </Badge>
-        );
-      },
     },
     {
       id: "azioni",

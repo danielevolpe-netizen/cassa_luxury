@@ -9,7 +9,6 @@ export type PeriodFilter = {
   companyId?: string;
 };
 
-const paid = sql`coalesce(${transactions.amountPaid}, 0)`;
 const NO_COMPANY = "Senza società";
 
 function txWhere(f: PeriodFilter): SQL | undefined {
@@ -111,50 +110,6 @@ export async function getProfitLossByCategory(
   return [...map.values()].sort((a, b) =>
     a.categoryName.localeCompare(b.categoryName),
   );
-}
-
-// --- Crediti / Debiti (residui) --------------------------------------------
-
-export type ReceivablePayable = {
-  companyId: string | null;
-  companyName: string;
-  crediti: number;
-  debiti: number;
-};
-
-export async function getReceivablesPayables(
-  f: PeriodFilter = {},
-): Promise<ReceivablePayable[]> {
-  const [rows, companyMap] = await Promise.all([
-    db
-      .select({
-        companyId: transactions.companyId,
-        direction: transactions.direction,
-        residuo: sql<string>`sum(${transactions.total} - ${paid})`,
-      })
-      .from(transactions)
-      .where(txWhere(f))
-      .groupBy(transactions.companyId, transactions.direction),
-    getRentCompanyMap(),
-  ]);
-
-  const map = new Map<string, ReceivablePayable>();
-  for (const r of rows) {
-    const key = r.companyId ?? "__none__";
-    const cur =
-      map.get(key) ??
-      {
-        companyId: r.companyId,
-        companyName: companyName(companyMap, r.companyId),
-        crediti: 0,
-        debiti: 0,
-      };
-    const amount = Number(r.residuo ?? 0);
-    if (r.direction === "entrata") cur.crediti += amount;
-    else cur.debiti += amount;
-    map.set(key, cur);
-  }
-  return [...map.values()].filter((r) => r.crediti !== 0 || r.debiti !== 0);
 }
 
 // --- Depositi cauzionali ----------------------------------------------------

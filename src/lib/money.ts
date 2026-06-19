@@ -40,10 +40,3 @@ export function formatEUR(value: number | string | null | undefined): string {
   return eurFormatter.format(toNumber(value));
 }
 
-/** Residuo da pagare/incassare = totale - importo pagato. */
-export function residuo(
-  total: number | string | null | undefined,
-  amountPaid: number | string | null | undefined,
-): number {
-  return round2(toNumber(total) - toNumber(amountPaid));
-}
