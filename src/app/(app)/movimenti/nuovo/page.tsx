@@ -3,7 +3,7 @@ import { createTransaction } from "../actions";
 import { TransactionForm } from "../transaction-form";
 
 export default async function NuovoMovimentoPage() {
-  const { companyList, categoryList, carList, paymentMethodList } =
+  const { companies, categories, cars, paymentMethods } =
     await getTransactionLookups();
 
   return (
@@ -13,13 +13,10 @@ export default async function NuovoMovimentoPage() {
       </h1>
       <TransactionForm
         action={createTransaction}
-        companies={companyList.map((c) => ({ value: c.id, label: c.name }))}
-        categories={categoryList.map((c) => ({ value: c.id, label: c.name }))}
-        cars={carList.map((c) => ({ value: c.id, label: c.code }))}
-        paymentMethods={paymentMethodList.map((p) => ({
-          value: p.id,
-          label: p.name,
-        }))}
+        companies={companies}
+        categories={categories}
+        cars={cars}
+        paymentMethods={paymentMethods}
         submitLabel="Crea movimento"
       />
     </div>

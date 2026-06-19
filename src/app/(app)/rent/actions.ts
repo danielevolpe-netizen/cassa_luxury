@@ -1,11 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { cars, deadlines, leasingContracts } from "@/db/schema";
+import { deadlines, leasingContracts } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth-helpers";
 import { toDecimalString } from "@/lib/money";
 
@@ -13,7 +12,6 @@ export type FormState = { error?: string; ok?: boolean };
 
 const fail = (m: string): FormState => ({ error: m });
 
-/** Legge un campo monetario: "" -> null, altrimenti decimale a 2 cifre. */
 function money(v: FormDataEntryValue | null): string | null {
   const s = String(v ?? "").trim();
   if (s === "") return null;
@@ -33,85 +31,7 @@ function uuidOrNull(v: FormDataEntryValue | null): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Auto
-// ---------------------------------------------------------------------------
-
-const carSchema = z.object({
-  code: z.string().trim().min(1, "Il codice (Modello | Targa) è obbligatorio."),
-  brand: z.string().trim().optional(),
-  model: z.string().trim().min(1, "Il modello è obbligatorio."),
-  plate: z.string().trim().optional(),
-  status: z.enum(["attiva", "venduta", "in_arrivo"]),
-});
-
-function carValues(formData: FormData) {
-  const parsed = carSchema.safeParse({
-    code: formData.get("code") ?? "",
-    brand: formData.get("brand") ?? undefined,
-    model: formData.get("model") ?? "",
-    plate: formData.get("plate") ?? undefined,
-    status: formData.get("status") ?? "attiva",
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0].message };
-  return {
-    values: {
-      code: parsed.data.code,
-      brand: text(formData.get("brand")),
-      model: parsed.data.model,
-      plate: text(formData.get("plate")),
-      companyId: uuidOrNull(formData.get("companyId")),
-      status: parsed.data.status,
-      notes: text(formData.get("notes")),
-    },
-  };
-}
-
-export async function createCar(
-  _prev: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  await requireAdmin();
-  const res = carValues(formData);
-  if (res.error) return fail(res.error);
-  try {
-    await db.insert(cars).values(res.values!);
-  } catch {
-    return fail("Codice auto già esistente.");
-  }
-  revalidatePath("/flotta");
-  redirect("/flotta");
-}
-
-export async function updateCar(
-  id: string,
-  _prev: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  await requireAdmin();
-  const res = carValues(formData);
-  if (res.error) return fail(res.error);
-  try {
-    await db
-      .update(cars)
-      .set({ ...res.values!, updatedAt: new Date() })
-      .where(eq(cars.id, id));
-  } catch {
-    return fail("Codice auto già esistente.");
-  }
-  revalidatePath("/flotta");
-  revalidatePath(`/flotta/${id}`);
-  return { ok: true };
-}
-
-export async function deleteCar(id: string): Promise<void> {
-  await requireAdmin();
-  await db.delete(cars).where(eq(cars.id, id));
-  revalidatePath("/flotta");
-  redirect("/flotta");
-}
-
-// ---------------------------------------------------------------------------
-// Contratti di leasing
+// Contratti di leasing (collegati a un veicolo Numbers Rent)
 // ---------------------------------------------------------------------------
 
 export async function createLeasing(
@@ -133,7 +53,7 @@ export async function createLeasing(
     buyoutValue: money(formData.get("buyoutValue")),
     notes: text(formData.get("notes")),
   });
-  revalidatePath(`/flotta/${carId}`);
+  revalidatePath(`/rent/veicoli/${carId}`);
   return { ok: true };
 }
 
@@ -160,17 +80,14 @@ export async function updateLeasing(
       updatedAt: new Date(),
     })
     .where(eq(leasingContracts.id, id));
-  revalidatePath(`/flotta/${carId}`);
+  revalidatePath(`/rent/veicoli/${carId}`);
   return { ok: true };
 }
 
-export async function deleteLeasing(
-  id: string,
-  carId: string,
-): Promise<void> {
+export async function deleteLeasing(id: string, carId: string): Promise<void> {
   await requireAdmin();
   await db.delete(leasingContracts).where(eq(leasingContracts.id, id));
-  revalidatePath(`/flotta/${carId}`);
+  revalidatePath(`/rent/veicoli/${carId}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -211,7 +128,7 @@ export async function createDeadline(
   if (res.error) return fail(res.error);
   await db.insert(deadlines).values(res.values!);
   revalidatePath("/scadenze");
-  if (res.values!.carId) revalidatePath(`/flotta/${res.values!.carId}`);
+  if (res.values!.carId) revalidatePath(`/rent/veicoli/${res.values!.carId}`);
   return { ok: true };
 }
 
@@ -228,7 +145,7 @@ export async function updateDeadline(
     .set({ ...res.values!, updatedAt: new Date() })
     .where(eq(deadlines.id, id));
   revalidatePath("/scadenze");
-  if (res.values!.carId) revalidatePath(`/flotta/${res.values!.carId}`);
+  if (res.values!.carId) revalidatePath(`/rent/veicoli/${res.values!.carId}`);
   return { ok: true };
 }
 

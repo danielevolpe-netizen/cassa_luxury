@@ -6,6 +6,7 @@ import {
   listTransactions,
   type TransactionFilters,
 } from "@/lib/data/transactions";
+import { getRentCompanyMap, getRentVehicleMap } from "@/lib/data/rent";
 import { residuo, toNumber } from "@/lib/money";
 import { formatEUR } from "@/lib/money";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -31,15 +32,17 @@ export default async function MovimentiPage({
     stato: sp.stato as TransactionFilters["stato"],
   };
 
-  const [user, lookups, rows, totals] = await Promise.all([
-    getCurrentUser(),
-    getTransactionLookups(),
-    listTransactions(filters),
-    getTransactionsTotals(filters),
-  ]);
+  const [user, lookups, rows, totals, companyMap, vehicleMap] =
+    await Promise.all([
+      getCurrentUser(),
+      getTransactionLookups(),
+      listTransactions(filters),
+      getTransactionsTotals(filters),
+      getRentCompanyMap(),
+      getRentVehicleMap(),
+    ]);
 
   const isAdmin = user?.role === "admin";
-  const { companyList, categoryList, carList } = lookups;
 
   const tableRows: MovimentoRow[] = rows.map((t) => ({
     id: t.id,
@@ -47,8 +50,8 @@ export default async function MovimentiPage({
     direction: t.direction,
     counterparty: t.counterparty,
     description: t.description,
-    companyName: t.company?.name ?? null,
-    carCode: t.car?.code ?? null,
+    companyName: t.companyId ? (companyMap.get(t.companyId) ?? null) : null,
+    carCode: t.carId ? (vehicleMap.get(t.carId) ?? null) : null,
     categoryName: t.category?.name ?? null,
     taxable: toNumber(t.taxable),
     vatAmount: toNumber(t.vatAmount),
@@ -108,25 +111,25 @@ export default async function MovimentiPage({
         </select>
         <select name="companyId" defaultValue={sp.companyId ?? ""} className={nativeSelect}>
           <option value="">Tutte le società</option>
-          {companyList.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
+          {lookups.companies.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
             </option>
           ))}
         </select>
         <select name="categoryId" defaultValue={sp.categoryId ?? ""} className={nativeSelect}>
           <option value="">Tutte le categorie</option>
-          {categoryList.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
+          {lookups.categories.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
             </option>
           ))}
         </select>
         <select name="carId" defaultValue={sp.carId ?? ""} className={nativeSelect}>
           <option value="">Tutte le auto</option>
-          {carList.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.code}
+          {lookups.cars.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
             </option>
           ))}
         </select>

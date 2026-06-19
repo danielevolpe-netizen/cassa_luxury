@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 
 export type RentVehicleRow = {
   id: string;
@@ -60,6 +62,19 @@ export function RentVehiclesTable({ rows }: { rows: RentVehicleRow[] }) {
         >
           {row.original.isActive ? "Attivo" : "Non attivo"}
         </Badge>
+      ),
+    },
+    {
+      id: "azioni",
+      header: "",
+      meta: { align: "right" },
+      cell: ({ row }) => (
+        <Link
+          href={`/rent/veicoli/${row.original.id}`}
+          className={buttonVariants({ variant: "ghost", size: "sm" })}
+        >
+          Dettaglio
+        </Link>
       ),
     },
   ];

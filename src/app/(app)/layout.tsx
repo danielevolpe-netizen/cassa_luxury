@@ -40,7 +40,6 @@ export default async function AppLayout({
         <nav className="flex items-center gap-1 overflow-x-auto px-4 pb-2 sm:px-6">
           <NavLink href="/">Dashboard</NavLink>
           <NavLink href="/movimenti">Movimenti</NavLink>
-          <NavLink href="/flotta">Flotta</NavLink>
           <NavLink href="/scadenze">Scadenze</NavLink>
           <NavLink href="/report">Report</NavLink>
           <NavLink href="/crediti-debiti">Crediti/Debiti</NavLink>

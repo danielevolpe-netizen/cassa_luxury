@@ -1,14 +1,9 @@
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { cars, categories, companies, paymentMethods } from "@/db/schema";
+import { categories, paymentMethods } from "@/db/schema";
+import { getRentCompanyOptions, getRentVehicleOptions } from "./rent";
 
-export function getActiveCompanies() {
-  return db
-    .select()
-    .from(companies)
-    .where(eq(companies.active, true))
-    .orderBy(asc(companies.name));
-}
+export type Option = { value: string; label: string };
 
 export function getActiveCategories() {
   return db
@@ -16,10 +11,6 @@ export function getActiveCategories() {
     .from(categories)
     .where(eq(categories.active, true))
     .orderBy(asc(categories.sortOrder), asc(categories.name));
-}
-
-export function getActiveCars() {
-  return db.select().from(cars).orderBy(asc(cars.code));
 }
 
 export function getActivePaymentMethods() {
@@ -30,14 +21,25 @@ export function getActivePaymentMethods() {
     .orderBy(asc(paymentMethods.name));
 }
 
-/** Carica tutte le anagrafiche necessarie ai form dei movimenti. */
+/**
+ * Anagrafiche per i form/filtri dei movimenti.
+ * Auto e società provengono da Numbers Rent (sola lettura); categorie e
+ * metodi di pagamento sono locali. Tutte come opzioni {value,label}.
+ */
 export async function getTransactionLookups() {
-  const [companyList, categoryList, carList, paymentMethodList] =
-    await Promise.all([
-      getActiveCompanies(),
-      getActiveCategories(),
-      getActiveCars(),
-      getActivePaymentMethods(),
-    ]);
-  return { companyList, categoryList, carList, paymentMethodList };
+  const [companies, cars, categoryList, paymentMethodList] = await Promise.all([
+    getRentCompanyOptions(),
+    getRentVehicleOptions(),
+    getActiveCategories(),
+    getActivePaymentMethods(),
+  ]);
+  return {
+    companies,
+    cars,
+    categories: categoryList.map((c) => ({ value: c.id, label: c.name })),
+    paymentMethods: paymentMethodList.map((p) => ({
+      value: p.id,
+      label: p.name,
+    })),
+  };
 }

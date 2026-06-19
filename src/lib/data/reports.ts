@@ -1,6 +1,7 @@
 import { and, eq, gte, lte, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
-import { cars, categories, companies, leasingContracts, transactions } from "@/db/schema";
+import { categories, leasingContracts, transactions } from "@/db/schema";
+import { getRentCompanyMap, getRentVehicleMap } from "./rent";
 
 export type PeriodFilter = {
   from?: string;
@@ -9,6 +10,7 @@ export type PeriodFilter = {
 };
 
 const paid = sql`coalesce(${transactions.amountPaid}, 0)`;
+const NO_COMPANY = "Senza società";
 
 function txWhere(f: PeriodFilter): SQL | undefined {
   const conds: SQL[] = [];
@@ -18,7 +20,13 @@ function txWhere(f: PeriodFilter): SQL | undefined {
   return conds.length ? and(...conds) : undefined;
 }
 
-const NO_COMPANY = "Senza società";
+function companyName(
+  map: Map<string, string>,
+  id: string | null,
+): string {
+  if (!id) return NO_COMPANY;
+  return map.get(id) ?? "Società sconosciuta";
+}
 
 // --- Conto economico per società -------------------------------------------
 
@@ -33,25 +41,31 @@ export type CompanyPnL = {
 export async function getProfitLossByCompany(
   f: PeriodFilter = {},
 ): Promise<CompanyPnL[]> {
-  const rows = await db
-    .select({
-      companyId: transactions.companyId,
-      companyName: companies.name,
-      direction: transactions.direction,
-      total: sql<string>`sum(${transactions.total})`,
-    })
-    .from(transactions)
-    .leftJoin(companies, eq(transactions.companyId, companies.id))
-    .where(txWhere(f))
-    .groupBy(transactions.companyId, companies.name, transactions.direction);
+  const [rows, companyMap] = await Promise.all([
+    db
+      .select({
+        companyId: transactions.companyId,
+        direction: transactions.direction,
+        total: sql<string>`sum(${transactions.total})`,
+      })
+      .from(transactions)
+      .where(txWhere(f))
+      .groupBy(transactions.companyId, transactions.direction),
+    getRentCompanyMap(),
+  ]);
 
   const map = new Map<string, CompanyPnL>();
   for (const r of rows) {
     const key = r.companyId ?? "__none__";
-    const name = r.companyName ?? NO_COMPANY;
     const cur =
       map.get(key) ??
-      { companyId: r.companyId, companyName: name, ricavi: 0, costi: 0, saldo: 0 };
+      {
+        companyId: r.companyId,
+        companyName: companyName(companyMap, r.companyId),
+        ricavi: 0,
+        costi: 0,
+        saldo: 0,
+      };
     const amount = Number(r.total ?? 0);
     if (r.direction === "entrata") cur.ricavi += amount;
     else cur.costi += amount;
@@ -104,32 +118,37 @@ export async function getProfitLossByCategory(
 export type ReceivablePayable = {
   companyId: string | null;
   companyName: string;
-  crediti: number; // residuo su entrate (da incassare)
-  debiti: number; // residuo su uscite (da pagare)
+  crediti: number;
+  debiti: number;
 };
 
 export async function getReceivablesPayables(
   f: PeriodFilter = {},
 ): Promise<ReceivablePayable[]> {
-  const rows = await db
-    .select({
-      companyId: transactions.companyId,
-      companyName: companies.name,
-      direction: transactions.direction,
-      residuo: sql<string>`sum(${transactions.total} - ${paid})`,
-    })
-    .from(transactions)
-    .leftJoin(companies, eq(transactions.companyId, companies.id))
-    .where(txWhere(f))
-    .groupBy(transactions.companyId, companies.name, transactions.direction);
+  const [rows, companyMap] = await Promise.all([
+    db
+      .select({
+        companyId: transactions.companyId,
+        direction: transactions.direction,
+        residuo: sql<string>`sum(${transactions.total} - ${paid})`,
+      })
+      .from(transactions)
+      .where(txWhere(f))
+      .groupBy(transactions.companyId, transactions.direction),
+    getRentCompanyMap(),
+  ]);
 
   const map = new Map<string, ReceivablePayable>();
   for (const r of rows) {
     const key = r.companyId ?? "__none__";
-    const name = r.companyName ?? NO_COMPANY;
     const cur =
       map.get(key) ??
-      { companyId: r.companyId, companyName: name, crediti: 0, debiti: 0 };
+      {
+        companyId: r.companyId,
+        companyName: companyName(companyMap, r.companyId),
+        crediti: 0,
+        debiti: 0,
+      };
     const amount = Number(r.residuo ?? 0);
     if (r.direction === "entrata") cur.crediti += amount;
     else cur.debiti += amount;
@@ -143,42 +162,45 @@ export async function getReceivablesPayables(
 export async function getDepositsByCompany(): Promise<
   { companyName: string; total: number }[]
 > {
-  const rows = await db
-    .select({
-      companyName: companies.name,
-      total: sql<string>`sum(${transactions.total})`,
-    })
-    .from(transactions)
-    .leftJoin(companies, eq(transactions.companyId, companies.id))
-    .leftJoin(categories, eq(transactions.categoryId, categories.id))
-    .where(eq(categories.name, "Deposito Cauzionale"))
-    .groupBy(companies.name);
+  const [rows, companyMap] = await Promise.all([
+    db
+      .select({
+        companyId: transactions.companyId,
+        total: sql<string>`sum(${transactions.total})`,
+      })
+      .from(transactions)
+      .leftJoin(categories, eq(transactions.categoryId, categories.id))
+      .where(eq(categories.name, "Deposito Cauzionale"))
+      .groupBy(transactions.companyId),
+    getRentCompanyMap(),
+  ]);
 
   return rows.map((r) => ({
-    companyName: r.companyName ?? NO_COMPANY,
+    companyName: companyName(companyMap, r.companyId),
     total: Number(r.total ?? 0),
   }));
 }
 
-// --- Debito residuo leasing -------------------------------------------------
+// --- Debito residuo leasing (per veicolo) -----------------------------------
 
-export async function getLeasingResidualByCompany(): Promise<
-  { companyName: string; residual: number; buyout: number }[]
+export async function getLeasingResidualByVehicle(): Promise<
+  { vehicleLabel: string; residual: number; buyout: number }[]
 > {
-  const rows = await db
-    .select({
-      companyName: companies.name,
-      residual: sql<string>`sum(coalesce(${leasingContracts.residualDebt}, 0))`,
-      buyout: sql<string>`sum(coalesce(${leasingContracts.buyoutValue}, 0))`,
-    })
-    .from(leasingContracts)
-    .leftJoin(cars, eq(leasingContracts.carId, cars.id))
-    .leftJoin(companies, eq(cars.companyId, companies.id))
-    .groupBy(companies.name);
+  const [rows, vehicleMap] = await Promise.all([
+    db
+      .select({
+        carId: leasingContracts.carId,
+        residual: sql<string>`sum(coalesce(${leasingContracts.residualDebt}, 0))`,
+        buyout: sql<string>`sum(coalesce(${leasingContracts.buyoutValue}, 0))`,
+      })
+      .from(leasingContracts)
+      .groupBy(leasingContracts.carId),
+    getRentVehicleMap(),
+  ]);
 
   return rows
     .map((r) => ({
-      companyName: r.companyName ?? NO_COMPANY,
+      vehicleLabel: vehicleMap.get(r.carId) ?? "Veicolo sconosciuto",
       residual: Number(r.residual ?? 0),
       buyout: Number(r.buyout ?? 0),
     }))

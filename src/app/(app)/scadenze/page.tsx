@@ -1,14 +1,15 @@
 import { getCurrentUser } from "@/lib/auth-helpers";
-import { getAllCars } from "@/lib/data/cars";
 import { deadlineAlert, listDeadlines } from "@/lib/data/deadlines";
-import { DeadlinesManager } from "../flotta/deadlines-manager";
+import { getRentVehicleMap, getRentVehicleOptions } from "@/lib/data/rent";
+import { DeadlinesManager } from "../rent/deadlines-manager";
 import { Card } from "@/components/ui/card";
 
 export default async function ScadenzePage() {
-  const [user, deadlines, cars] = await Promise.all([
+  const [user, deadlines, vehicleOptions, vehicleMap] = await Promise.all([
     getCurrentUser(),
     listDeadlines(),
-    getAllCars(),
+    getRentVehicleOptions(),
+    getRentVehicleMap(),
   ]);
   const isAdmin = user?.role === "admin";
 
@@ -41,11 +42,11 @@ export default async function ScadenzePage() {
 
       <DeadlinesManager
         isAdmin={isAdmin}
-        cars={cars.map((c) => ({ value: c.id, label: c.code }))}
+        cars={vehicleOptions}
         items={deadlines.map((d) => ({
           id: d.id,
           carId: d.carId,
-          carCode: d.car?.code ?? null,
+          carCode: d.carId ? (vehicleMap.get(d.carId) ?? null) : null,
           type: d.type,
           dueDate: d.dueDate,
           amount: d.amount,

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getActiveCompanies } from "@/lib/data/lookups";
+import { getRentCompanyOptions } from "@/lib/data/rent";
 import {
   getProfitLossByCategory,
   getProfitLossByCompany,
@@ -37,7 +37,7 @@ export default async function ReportPage({
   };
 
   const [companies, byCompany, byCategory] = await Promise.all([
-    getActiveCompanies(),
+    getRentCompanyOptions(),
     getProfitLossByCompany(filter),
     getProfitLossByCategory(filter),
   ]);
@@ -86,8 +86,8 @@ export default async function ReportPage({
         <select name="companyId" defaultValue={sp.companyId ?? ""} className={nativeSelect}>
           <option value="">Tutte le società</option>
           {companies.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
+            <option key={c.value} value={c.value}>
+              {c.label}
             </option>
           ))}
         </select>

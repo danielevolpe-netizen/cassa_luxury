@@ -1,6 +1,6 @@
 import {
   getDepositsByCompany,
-  getLeasingResidualByCompany,
+  getLeasingResidualByVehicle,
   getReceivablesPayables,
 } from "@/lib/data/reports";
 import { formatEUR } from "@/lib/money";
@@ -18,7 +18,7 @@ export default async function CreditiDebitiPage() {
   const [rp, deposits, leasing] = await Promise.all([
     getReceivablesPayables(),
     getDepositsByCompany(),
-    getLeasingResidualByCompany(),
+    getLeasingResidualByVehicle(),
   ]);
 
   const totCrediti = rp.reduce((s, r) => s + r.crediti, 0);
@@ -131,7 +131,7 @@ export default async function CreditiDebitiPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Società</TableHead>
+                  <TableHead>Veicolo</TableHead>
                   <TableHead className="text-right">Debito residuo</TableHead>
                   <TableHead className="text-right">Valore riscatto</TableHead>
                 </TableRow>
@@ -145,8 +145,8 @@ export default async function CreditiDebitiPage() {
                   </TableRow>
                 ) : (
                   leasing.map((l) => (
-                    <TableRow key={l.companyName}>
-                      <TableCell>{l.companyName}</TableCell>
+                    <TableRow key={l.vehicleLabel}>
+                      <TableCell>{l.vehicleLabel}</TableCell>
                       <TableCell className="text-right">{formatEUR(l.residual)}</TableCell>
                       <TableCell className="text-right">{formatEUR(l.buyout)}</TableCell>
                     </TableRow>

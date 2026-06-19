@@ -58,9 +58,7 @@ export async function listTransactions(
     orderBy: [desc(transactions.date), desc(transactions.createdAt)],
     limit: opts.limit ?? 500,
     with: {
-      company: true,
       category: true,
-      car: true,
       paymentMethod: true,
     },
   });
@@ -107,9 +105,7 @@ export async function getTransaction(id: string) {
   return db.query.transactions.findFirst({
     where: eq(transactions.id, id),
     with: {
-      company: true,
       category: true,
-      car: true,
       paymentMethod: true,
     },
   });

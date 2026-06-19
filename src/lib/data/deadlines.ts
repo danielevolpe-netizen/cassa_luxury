@@ -15,7 +15,6 @@ export function listDeadlines(f: DeadlineFilters = {}) {
   return db.query.deadlines.findMany({
     where: conds.length ? and(...conds) : undefined,
     orderBy: [asc(deadlines.dueDate)],
-    with: { car: true, company: true },
   });
 }
 

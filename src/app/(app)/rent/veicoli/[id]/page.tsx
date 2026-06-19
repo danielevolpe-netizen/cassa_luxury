@@ -1,16 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth-helpers";
-import { getCar } from "@/lib/data/cars";
-import { getActiveCompanies } from "@/lib/data/lookups";
+import { getLeasingByCar } from "@/lib/data/leasing";
+import { listDeadlines } from "@/lib/data/deadlines";
+import { getRentVehicle, vehicleLabel } from "@/lib/data/rent";
 import { listTransactions } from "@/lib/data/transactions";
 import { formatDate } from "@/lib/format";
 import { formatEUR } from "@/lib/money";
-import { deleteCar, updateCar } from "../actions";
-import { CarForm } from "../car-form";
-import { DeleteButton } from "@/components/delete-button";
-import { LeasingManager } from "../leasing-manager";
-import { DeadlinesManager } from "../deadlines-manager";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -21,81 +17,87 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { LeasingManager } from "../../leasing-manager";
+import { DeadlinesManager } from "../../deadlines-manager";
 
 const sectionTitle =
   "text-sm font-semibold uppercase tracking-wide text-muted-foreground";
 
-export default async function CarDetailPage({
+export default async function RentVehicleDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [user, car] = await Promise.all([getCurrentUser(), getCar(id)]);
-  if (!car) notFound();
+  const [user, vehicle] = await Promise.all([
+    getCurrentUser(),
+    getRentVehicle(id),
+  ]);
+  if (!vehicle) notFound();
 
   const isAdmin = user?.role === "admin";
-  const [companies, txs] = await Promise.all([
-    getActiveCompanies(),
+  const [leasing, deadlines, txs] = await Promise.all([
+    getLeasingByCar(id),
+    listDeadlines({ carId: id }),
     listTransactions({ carId: id }),
   ]);
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href="/flotta" className="text-sm text-muted-foreground hover:underline">
-            ← Flotta
-          </Link>
-          <h1 className="text-2xl font-semibold tracking-tight">{car.code}</h1>
-          <p className="text-sm text-muted-foreground">
-            {car.brand ?? ""} {car.company?.name ? `· ${car.company.name}` : ""}
-          </p>
-        </div>
-        {isAdmin ? (
-          <DeleteButton
-            action={deleteCar.bind(null, car.id)}
-            message={`Eliminare l'auto "${car.code}"? Verranno eliminati anche i suoi contratti di leasing e scadenze.`}
-            label="Elimina auto"
-          />
-        ) : null}
+      <div>
+        <Link
+          href="/rent/veicoli"
+          className="text-sm text-muted-foreground hover:underline"
+        >
+          ← Veicoli
+        </Link>
+        <h2 className="text-xl font-semibold tracking-tight">
+          {vehicleLabel(vehicle)}
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          {vehicle.brand} {vehicle.model}
+          {vehicle.year ? ` · ${vehicle.year}` : ""} · {vehicle.ownership}
+        </p>
       </div>
 
-      {/* Dati auto */}
+      {/* Dati veicolo (sola lettura da Numbers Rent) */}
       <section className="space-y-3">
-        <h2 className={sectionTitle}>Dati auto</h2>
-        {isAdmin ? (
-          <CarForm
-            action={updateCar.bind(null, car.id)}
-            companies={companies.map((c) => ({ value: c.id, label: c.name }))}
-            defaults={{
-              code: car.code,
-              brand: car.brand ?? "",
-              model: car.model,
-              plate: car.plate ?? "",
-              companyId: car.companyId ?? "",
-              status: car.status,
-              notes: car.notes ?? "",
-            }}
-            submitLabel="Salva modifiche"
-          />
-        ) : (
-          <Card className="gap-1 p-4 text-sm">
-            <p>Modello: {car.model}</p>
-            <p>Targa: {car.plate ?? "—"}</p>
-            <p>Stato: {car.status}</p>
-            {car.notes ? <p>Note: {car.notes}</p> : null}
-          </Card>
-        )}
+        <h2 className={sectionTitle}>Dati veicolo (Numbers Rent)</h2>
+        <Card className="grid grid-cols-2 gap-2 p-4 text-sm sm:grid-cols-3">
+          <div>
+            <span className="text-muted-foreground">Targa: </span>
+            {vehicle.plate ?? "—"}
+          </div>
+          <div>
+            <span className="text-muted-foreground">Anno: </span>
+            {vehicle.year ?? "—"}
+          </div>
+          <div>
+            <span className="text-muted-foreground">Colore: </span>
+            {vehicle.color ?? "—"}
+          </div>
+          <div>
+            <span className="text-muted-foreground">Alimentazione: </span>
+            {vehicle.fuelType ?? "—"}
+          </div>
+          <div>
+            <span className="text-muted-foreground">Cambio: </span>
+            {vehicle.transmission ?? "—"}
+          </div>
+          <div>
+            <span className="text-muted-foreground">Km: </span>
+            {vehicle.odometer ?? "—"}
+          </div>
+        </Card>
       </section>
 
       {/* Leasing */}
       <section className="space-y-3">
         <h2 className={sectionTitle}>Contratti di leasing</h2>
         <LeasingManager
-          carId={car.id}
+          carId={id}
           isAdmin={isAdmin}
-          items={car.leasingContracts.map((l) => ({
+          items={leasing.map((l) => ({
             id: l.id,
             lessor: l.lessor,
             monthlyTaxable: l.monthlyTaxable,
@@ -116,8 +118,8 @@ export default async function CarDetailPage({
         <h2 className={sectionTitle}>Scadenze</h2>
         <DeadlinesManager
           isAdmin={isAdmin}
-          fixedCarId={car.id}
-          items={car.deadlines.map((d) => ({
+          fixedCarId={id}
+          items={deadlines.map((d) => ({
             id: d.id,
             carId: d.carId,
             carCode: null,
@@ -149,7 +151,7 @@ export default async function CarDetailPage({
               {txs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-20 text-center text-muted-foreground">
-                    Nessun movimento collegato a questa auto.
+                    Nessun movimento collegato a questo veicolo.
                   </TableCell>
                 </TableRow>
               ) : (

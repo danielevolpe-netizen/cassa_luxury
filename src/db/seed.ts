@@ -1,7 +1,7 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { db } from "./index";
-import { categories, companies, paymentMethods, users } from "./schema";
+import { categories, paymentMethods, users } from "./schema";
 
 const ADMIN_EMAIL = "daniele@numbersgroup.it";
 const ADMIN_NAME = "Daniele Volpe";
@@ -10,13 +10,7 @@ const ADMIN_DEFAULT_PASSWORD = "CassaLuxury2026!";
 
 // Seed delle anagrafiche di base. Idempotente: usa onConflictDoNothing
 // così può essere rieseguito senza creare duplicati.
-
-const COMPANIES = [
-  { name: "Turrini/Fox", code: "Tfox" },
-  { name: "GTLink", code: "GTLink" },
-  { name: "Linkers", code: "Linkers" },
-  { name: "Panda Soleco", code: "PandaSoleco" },
-];
+// (Le società sono gestite in Numbers Rent, non più qui.)
 
 const CATEGORIES: {
   name: string;
@@ -38,9 +32,6 @@ const PAYMENT_METHODS = [{ name: "Bonifico" }, { name: "Contanti" }];
 
 async function main() {
   console.log("Seed anagrafiche…");
-
-  await db.insert(companies).values(COMPANIES).onConflictDoNothing();
-  console.log(`  società: ${COMPANIES.length}`);
 
   await db.insert(categories).values(CATEGORIES).onConflictDoNothing();
   console.log(`  categorie: ${CATEGORIES.length}`);

@@ -38,12 +38,6 @@ const timestamps = {
 
 export const userRole = pgEnum("user_role", ["admin", "collaboratore"]);
 
-export const carStatus = pgEnum("car_status", [
-  "attiva",
-  "venduta",
-  "in_arrivo",
-]);
-
 export const categoryKind = pgEnum("category_kind", [
   "costo",
   "ricavo",
@@ -71,6 +65,11 @@ export const deadlineStatus = pgEnum("deadline_status", [
 
 // ---------------------------------------------------------------------------
 // Tabelle
+//
+// NOTA: la flotta (veicoli) e le società NON sono più tabelle locali: sono
+// gestite nel database esterno "numbers-rent" (sola lettura). Le colonne
+// `car_id` (veicolo) e `company_id` (società) qui sotto contengono gli UUID
+// di Numbers Rent e NON hanno foreign key (DB diverso).
 // ---------------------------------------------------------------------------
 
 /** Utenti dell'applicazione (con ruolo). */
@@ -81,50 +80,6 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   role: userRole("role").notNull().default("collaboratore"),
   active: boolean("active").notNull().default(true),
-  ...timestamps,
-});
-
-/** Società / gruppi (Turrini/Fox, GTLink, Linkers, Panda Soleco). Tutte gestibili. */
-export const companies = pgTable("companies", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  code: text("code").unique(),
-  active: boolean("active").notNull().default(true),
-  notes: text("notes"),
-  ...timestamps,
-});
-
-/** Flotta auto. `code` = "Modello | Targa". */
-export const cars = pgTable("cars", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  code: text("code").notNull().unique(),
-  brand: text("brand"),
-  model: text("model").notNull(),
-  plate: text("plate"),
-  companyId: uuid("company_id").references(() => companies.id, {
-    onDelete: "set null",
-  }),
-  status: carStatus("status").notNull().default("attiva"),
-  notes: text("notes"),
-  ...timestamps,
-});
-
-/** Contratti di leasing/noleggio collegati a un'auto. */
-export const leasingContracts = pgTable("leasing_contracts", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  carId: uuid("car_id")
-    .notNull()
-    .references(() => cars.id, { onDelete: "cascade" }),
-  lessor: text("lessor"),
-  monthlyTaxable: money("monthly_taxable"),
-  monthlyVat: money("monthly_vat"),
-  monthlyTotal: money("monthly_total"),
-  startDate: date("start_date"),
-  endDate: date("end_date"),
-  residualDebt: moneyNullable("residual_debt"),
-  residualDebtTaxable: moneyNullable("residual_debt_taxable"),
-  buyoutValue: moneyNullable("buyout_value"),
-  notes: text("notes"),
   ...timestamps,
 });
 
@@ -153,10 +108,10 @@ export const transactions = pgTable("transactions", {
   competenceDate: date("competence_date"),
   counterparty: text("counterparty"),
   description: text("description"),
-  carId: uuid("car_id").references(() => cars.id, { onDelete: "set null" }),
-  companyId: uuid("company_id").references(() => companies.id, {
-    onDelete: "set null",
-  }),
+  // UUID veicolo Numbers Rent (no FK).
+  carId: uuid("car_id"),
+  // UUID società Numbers Rent (no FK).
+  companyId: uuid("company_id"),
   categoryId: uuid("category_id").references(() => categories.id, {
     onDelete: "set null",
   }),
@@ -179,13 +134,31 @@ export const transactions = pgTable("transactions", {
   ...timestamps,
 });
 
+/** Contratti di leasing/noleggio collegati a un veicolo Numbers Rent. */
+export const leasingContracts = pgTable("leasing_contracts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // UUID veicolo Numbers Rent (no FK).
+  carId: uuid("car_id").notNull(),
+  lessor: text("lessor"),
+  monthlyTaxable: money("monthly_taxable"),
+  monthlyVat: money("monthly_vat"),
+  monthlyTotal: money("monthly_total"),
+  startDate: date("start_date"),
+  endDate: date("end_date"),
+  residualDebt: moneyNullable("residual_debt"),
+  residualDebtTaxable: moneyNullable("residual_debt_taxable"),
+  buyoutValue: moneyNullable("buyout_value"),
+  notes: text("notes"),
+  ...timestamps,
+});
+
 /** Scadenze (bolli, assicurazioni, revisioni, leasing) con alert. */
 export const deadlines = pgTable("deadlines", {
   id: uuid("id").primaryKey().defaultRandom(),
-  carId: uuid("car_id").references(() => cars.id, { onDelete: "cascade" }),
-  companyId: uuid("company_id").references(() => companies.id, {
-    onDelete: "set null",
-  }),
+  // UUID veicolo Numbers Rent (no FK).
+  carId: uuid("car_id"),
+  // UUID società Numbers Rent (no FK).
+  companyId: uuid("company_id"),
   type: deadlineType("type").notNull().default("altro"),
   dueDate: date("due_date").notNull(),
   amount: moneyNullable("amount"),
@@ -198,33 +171,8 @@ export const deadlines = pgTable("deadlines", {
 });
 
 // ---------------------------------------------------------------------------
-// Relations
+// Relations (solo tra tabelle locali)
 // ---------------------------------------------------------------------------
-
-export const companiesRelations = relations(companies, ({ many }) => ({
-  cars: many(cars),
-  transactions: many(transactions),
-}));
-
-export const carsRelations = relations(cars, ({ one, many }) => ({
-  company: one(companies, {
-    fields: [cars.companyId],
-    references: [companies.id],
-  }),
-  leasingContracts: many(leasingContracts),
-  transactions: many(transactions),
-  deadlines: many(deadlines),
-}));
-
-export const leasingContractsRelations = relations(
-  leasingContracts,
-  ({ one }) => ({
-    car: one(cars, {
-      fields: [leasingContracts.carId],
-      references: [cars.id],
-    }),
-  }),
-);
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
   transactions: many(transactions),
@@ -238,11 +186,6 @@ export const paymentMethodsRelations = relations(
 );
 
 export const transactionsRelations = relations(transactions, ({ one }) => ({
-  car: one(cars, { fields: [transactions.carId], references: [cars.id] }),
-  company: one(companies, {
-    fields: [transactions.companyId],
-    references: [companies.id],
-  }),
   category: one(categories, {
     fields: [transactions.categoryId],
     references: [categories.id],
@@ -258,11 +201,6 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 }));
 
 export const deadlinesRelations = relations(deadlines, ({ one }) => ({
-  car: one(cars, { fields: [deadlines.carId], references: [cars.id] }),
-  company: one(companies, {
-    fields: [deadlines.companyId],
-    references: [companies.id],
-  }),
   transaction: one(transactions, {
     fields: [deadlines.transactionId],
     references: [transactions.id],
@@ -275,11 +213,9 @@ export const deadlinesRelations = relations(deadlines, ({ one }) => ({
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
-export type Company = typeof companies.$inferSelect;
-export type Car = typeof cars.$inferSelect;
-export type LeasingContract = typeof leasingContracts.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type PaymentMethod = typeof paymentMethods.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
+export type LeasingContract = typeof leasingContracts.$inferSelect;
 export type Deadline = typeof deadlines.$inferSelect;

@@ -28,7 +28,7 @@ export default async function DashboardPage() {
 
   const links = [
     { href: "/movimenti", title: "Movimenti", desc: "Registro entrate/uscite" },
-    { href: "/flotta", title: "Flotta", desc: "Auto, leasing, scadenze" },
+    { href: "/rent", title: "Numbers Rent", desc: "Veicoli, leasing, scadenze" },
     { href: "/report", title: "Report", desc: "Conto economico per società" },
     { href: "/crediti-debiti", title: "Crediti/Debiti", desc: "Residui e depositi" },
   ];

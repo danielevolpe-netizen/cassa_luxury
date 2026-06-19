@@ -4,6 +4,7 @@ import {
   listTransactions,
   type TransactionFilters,
 } from "@/lib/data/transactions";
+import { getRentCompanyMap, getRentVehicleMap } from "@/lib/data/rent";
 import { formatDate } from "@/lib/format";
 import { residuo, toNumber } from "@/lib/money";
 import {
@@ -50,7 +51,11 @@ export async function GET(req: NextRequest) {
     stato: (sp.get("stato") as TransactionFilters["stato"]) || undefined,
   };
 
-  const rows = await listTransactions(filters, { limit: 100000 });
+  const [rows, companyMap, vehicleMap] = await Promise.all([
+    listTransactions(filters, { limit: 100000 }),
+    getRentCompanyMap(),
+    getRentVehicleMap(),
+  ]);
 
   const data: Cell[][] = rows.map((t) => [
     formatDate(t.date),
@@ -58,8 +63,8 @@ export async function GET(req: NextRequest) {
     t.direction === "entrata" ? "Entrata" : "Uscita",
     t.counterparty ?? "",
     t.description ?? "",
-    t.car?.code ?? "",
-    t.company?.name ?? "",
+    t.carId ? (vehicleMap.get(t.carId) ?? "") : "",
+    t.companyId ? (companyMap.get(t.companyId) ?? "") : "",
     t.category?.name ?? "",
     toNumber(t.taxable),
     toNumber(t.vatAmount),

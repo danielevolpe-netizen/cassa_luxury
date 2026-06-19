@@ -1,10 +1,6 @@
 import { asc } from "drizzle-orm";
 import { db } from "@/db";
-import { categories, companies, paymentMethods } from "@/db/schema";
-
-export function getAllCompanies() {
-  return db.select().from(companies).orderBy(asc(companies.name));
-}
+import { categories, paymentMethods } from "@/db/schema";
 
 export function getAllCategories() {
   return db

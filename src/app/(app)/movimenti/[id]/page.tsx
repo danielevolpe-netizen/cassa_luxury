@@ -39,8 +39,6 @@ export default async function ModificaMovimentoPage({
     notes: tx.notes ?? "",
   };
 
-  const { companyList, categoryList, carList, paymentMethodList } = lookups;
-
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold tracking-tight">
@@ -48,13 +46,10 @@ export default async function ModificaMovimentoPage({
       </h1>
       <TransactionForm
         action={updateTransaction.bind(null, id)}
-        companies={companyList.map((c) => ({ value: c.id, label: c.name }))}
-        categories={categoryList.map((c) => ({ value: c.id, label: c.name }))}
-        cars={carList.map((c) => ({ value: c.id, label: c.code }))}
-        paymentMethods={paymentMethodList.map((p) => ({
-          value: p.id,
-          label: p.name,
-        }))}
+        companies={lookups.companies}
+        categories={lookups.categories}
+        cars={lookups.cars}
+        paymentMethods={lookups.paymentMethods}
         defaults={defaults}
         submitLabel="Salva modifiche"
       />
