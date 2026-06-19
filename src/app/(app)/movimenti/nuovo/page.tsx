@@ -3,7 +3,7 @@ import { createTransaction } from "../actions";
 import { TransactionForm } from "../transaction-form";
 
 export default async function NuovoMovimentoPage() {
-  const { companies, categories, cars, paymentMethods } =
+  const { companies, categories, cars, paymentMethods, counterparties } =
     await getTransactionLookups();
 
   return (
@@ -17,6 +17,7 @@ export default async function NuovoMovimentoPage() {
         categories={categories}
         cars={cars}
         paymentMethods={paymentMethods}
+        counterparties={counterparties}
         submitLabel="Crea movimento"
       />
     </div>

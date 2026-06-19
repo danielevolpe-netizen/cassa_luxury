@@ -2,6 +2,7 @@ import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, paymentMethods } from "@/db/schema";
 import { getRentCompanyOptions, getRentVehicleOptions } from "./rent";
+import { getCounterpartyNames } from "./counterparties";
 
 export type Option = { value: string; label: string };
 
@@ -27,12 +28,14 @@ export function getActivePaymentMethods() {
  * metodi di pagamento sono locali. Tutte come opzioni {value,label}.
  */
 export async function getTransactionLookups() {
-  const [companies, cars, categoryList, paymentMethodList] = await Promise.all([
-    getRentCompanyOptions(),
-    getRentVehicleOptions(),
-    getActiveCategories(),
-    getActivePaymentMethods(),
-  ]);
+  const [companies, cars, categoryList, paymentMethodList, counterparties] =
+    await Promise.all([
+      getRentCompanyOptions(),
+      getRentVehicleOptions(),
+      getActiveCategories(),
+      getActivePaymentMethods(),
+      getCounterpartyNames(),
+    ]);
   return {
     companies,
     cars,
@@ -41,5 +44,6 @@ export async function getTransactionLookups() {
       value: p.id,
       label: p.name,
     })),
+    counterparties,
   };
 }

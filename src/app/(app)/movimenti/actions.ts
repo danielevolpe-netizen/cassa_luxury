@@ -5,11 +5,20 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { transactions } from "@/db/schema";
+import { counterparties, transactions } from "@/db/schema";
 import { requireAdmin, requireUser } from "@/lib/auth-helpers";
 import { toDecimalString } from "@/lib/money";
 
 export type FormState = { error?: string };
+
+/** Salva il cliente/fornitore in anagrafica se nuovo (per i suggerimenti futuri). */
+async function upsertCounterparty(name: string | null) {
+  if (!name) return;
+  await db
+    .insert(counterparties)
+    .values({ name })
+    .onConflictDoNothing({ target: counterparties.name });
+}
 
 const optionalText = z
   .string()
@@ -80,10 +89,9 @@ export async function createTransaction(
     return { error: parsed.error.issues[0]?.message ?? "Dati non validi." };
   }
 
-  await db.insert(transactions).values({
-    ...toValues(parsed.data),
-    createdBy: user.id,
-  });
+  const values = toValues(parsed.data);
+  await upsertCounterparty(values.counterparty);
+  await db.insert(transactions).values({ ...values, createdBy: user.id });
 
   revalidatePath("/movimenti");
   redirect("/movimenti");
@@ -100,9 +108,11 @@ export async function updateTransaction(
     return { error: parsed.error.issues[0]?.message ?? "Dati non validi." };
   }
 
+  const values = toValues(parsed.data);
+  await upsertCounterparty(values.counterparty);
   await db
     .update(transactions)
-    .set({ ...toValues(parsed.data), updatedAt: new Date() })
+    .set({ ...values, updatedAt: new Date() })
     .where(eq(transactions.id, id));
 
   revalidatePath("/movimenti");

@@ -48,6 +48,7 @@ export default async function ModificaMovimentoPage({
         categories={lookups.categories}
         cars={lookups.cars}
         paymentMethods={lookups.paymentMethods}
+        counterparties={lookups.counterparties}
         defaults={defaults}
         submitLabel="Salva modifiche"
       />

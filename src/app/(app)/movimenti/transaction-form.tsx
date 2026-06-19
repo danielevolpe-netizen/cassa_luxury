@@ -8,10 +8,10 @@ import { todayISO } from "@/lib/format";
 import { nativeSelect } from "@/lib/ui";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { CounterpartyCombobox } from "./counterparty-combobox";
 
 export type Option = { value: string; label: string };
 
@@ -55,6 +55,7 @@ export function TransactionForm({
   categories,
   cars,
   paymentMethods,
+  counterparties,
   defaults,
   submitLabel,
 }: {
@@ -63,6 +64,7 @@ export function TransactionForm({
   categories: Option[];
   cars: Option[];
   paymentMethods: Option[];
+  counterparties: string[];
   defaults?: Partial<TransactionDefaults>;
   submitLabel: string;
 }) {
@@ -154,8 +156,11 @@ export function TransactionForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="counterparty">Mittente / Destinatario</Label>
-          <Input id="counterparty" name="counterparty" defaultValue={init.counterparty} />
+          <Label htmlFor="counterparty">Cliente / Fornitore</Label>
+          <CounterpartyCombobox
+            options={counterparties}
+            defaultValue={init.counterparty}
+          />
         </div>
 
         <div className="space-y-1.5">
@@ -168,20 +173,22 @@ export function TransactionForm({
       <Card className="gap-3 p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">Importi</h2>
-          <Label className="flex items-center gap-2 font-normal text-muted-foreground">
-            <Checkbox
+          <label className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
+            <input
+              type="checkbox"
               checked={manual}
-              onCheckedChange={(v) => {
-                const on = v === true;
+              onChange={(e) => {
+                const on = e.target.checked;
                 setManual(on);
                 if (on) {
                   setVatAmount(computed.vat.toFixed(2));
                   setTotal(computed.total.toFixed(2));
                 }
               }}
+              className="size-4 rounded border-neutral-300"
             />
             Importi manuali
-          </Label>
+          </label>
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">

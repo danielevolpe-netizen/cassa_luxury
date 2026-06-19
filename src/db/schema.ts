@@ -100,6 +100,13 @@ export const paymentMethods = pgTable("payment_methods", {
   active: boolean("active").notNull().default(true),
 });
 
+/** Clienti / Fornitori (anagrafica per il campo controparte dei movimenti). */
+export const counterparties = pgTable("counterparties", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull().unique(),
+  ...timestamps,
+});
+
 /** Movimenti di cassa (registro entrate/uscite). */
 export const transactions = pgTable("transactions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -213,6 +220,7 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Category = typeof categories.$inferSelect;
 export type PaymentMethod = typeof paymentMethods.$inferSelect;
+export type Counterparty = typeof counterparties.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
 export type LeasingContract = typeof leasingContracts.$inferSelect;

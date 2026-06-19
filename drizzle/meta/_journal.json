@@ -22,6 +22,13 @@
       "when": 1781857670085,
       "tag": "0002_clever_blindfold",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781858858141,
+      "tag": "0003_legal_patriot",
+      "breakpoints": true
     }
   ]
 }
